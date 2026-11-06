@@ -15,6 +15,24 @@
 
 ビルドは不要です。グラフの描画には Chart.js を CDN から読み込んでいます。
 
+## トレーニング動画
+
+記録フォームの上部に、対象のトレーニング動画へのリンクを置いています。
+
+- 動画A: [1日で腹筋を割る鬼の筋トレ](https://www.youtube.com/watch?v=N3hjApR8o0E)（YouTube）
+- 動画B: [4分で限界突破腹筋トレーニング](https://www.youtube.com/watch?v=7E-JAyzbj7o)（YouTube）
+
+タイトルを押すとYouTubeで開き、「ここで再生」ボタンではサイト内のダイアログで埋め込み再生できます（youtube-nocookie を使用）。
+
+## 取り入れている技術
+
+- **PWA**: `manifest.webmanifest` と Service Worker（`sw.js`）により、ホーム画面への追加（インストール）とオフライン表示に対応しています。ページ本体はネットワーク優先で取得するため、サイトの更新はそのまま反映されます。
+- **Chart.js**: 体重推移と週ごとのセッション数をグラフ化しています。
+- **localStorage**: 記録データの保存先です。サーバー送信はしません。
+- **dialog要素 + 埋め込みプレイヤー**: 動画再生にモーダルダイアログを使っています。
+- **Web Share API**: 「このサイトを共有」ボタンから共有でき、未対応のブラウザではURLコピーに切り替わります。
+- **キーボードショートカット**: フォーム入力中に Ctrl+Enter（Macは Cmd+Enter）で保存できます。
+
 ## デザインとレイアウト
 
 - デザインはデジタル庁デザインシステム（DADS）のサンプルコンポーネント（design-system-example-components-html）を参考にしています。基調色の青（#0017c1）、ボタンや入力欄の形状、キーボード操作時のフォーカス表示（黒い輪郭＋黄色のリング）などを取り入れました。
@@ -44,4 +62,7 @@
 ## ファイル構成
 
 - `index.html` — アプリ本体（HTML／CSS／JavaScript を1ファイルに収録）
+- `manifest.webmanifest` — PWA用マニフェスト
+- `sw.js` — Service Worker（オフライン対応）
+- `icon.svg` — アイコン
 - `README.md` — このファイル

@@ -1,0 +1,1 @@
+{" lang":"ja","background_color":"#f2f2f2","description":"2本の腹筋動画を交互に行うトレーニングの記録ツール。データはブラウザの中にだけ保存されます。","display":"standalone","icons":[{"purpose":"any","sizes":"any","src":"icon.svg","type":"image/svg+xml"}],"name":"腹筋トレーニング記録","scope":".","short_name":"腹筋記録","start_url":".","theme_color":"#0017c1"}

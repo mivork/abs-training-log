@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>腹筋トレーニング記録</title>
+<meta name="theme-color" content="#0017c1">
+<meta name="description" content="2本の腹筋動画を交互に行うトレーニングの記録ツール。体重や睡眠も記録して変化の要因を切り分けます。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -110,6 +114,30 @@
   .empty { color: var(--gray-700); font-size: 0.92rem; padding: 8px 0; }
   footer { color: var(--gray-700); font-size: 0.8rem; margin-top: 20px; text-align: center; }
 
+
+  /* ===== トレーニング動画リスト ===== */
+  .video-list { display: grid; gap: 8px; margin-bottom: 14px; }
+  .video-item {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--gray-200); border-radius: var(--radius);
+    padding: 8px 10px; background: var(--gray-50);
+  }
+  .video-main { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; color: var(--gray-900); text-decoration: none; }
+  .video-main:hover { text-decoration: underline; }
+  .video-tag {
+    flex: none; background: var(--blue-900); color: var(--white);
+    font-size: 0.75rem; font-weight: 700; border-radius: 4px; padding: 2px 8px;
+  }
+  .video-title { font-size: 0.88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .video-sub { font-size: 0.75rem; color: var(--gray-700); font-weight: 400; }
+  button.watch { flex: none; padding: 6px 12px; font-size: 0.82rem; }
+  /* ===== 動画再生ダイアログ ===== */
+  dialog#videoDialog { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px; width: min(880px, 94vw); }
+  dialog#videoDialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+  .dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .dialog-head h3 { margin: 0; font-size: 1rem; }
+  .video-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 4px; overflow: hidden; }
+  .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   /* ===== デスクトップ: 1画面に収めるダッシュボード配置 ===== */
   @media (min-width: 1100px) and (min-height: 620px) {
     body { overflow: hidden; }
@@ -169,11 +197,27 @@
 <div class="wrap">
   <header>
     <h1>腹筋トレーニング記録</h1>
-    <p>トレーニング・体重・睡眠などを日ごとに記録して、変化の要因を切り分けるためのツールです。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
+    <p>2本の腹筋動画（動画A・動画B）を交互に行うトレーニングの記録ツールです。体重・睡眠も記録して、変化の要因を切り分けます。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
   </header>
 
   <section class="card area-form">
     <h2 id="formTitle">記録を追加</h2>
+    <div class="video-list" aria-label="トレーニング動画">
+      <div class="video-item">
+        <a class="video-main" href="https://www.youtube.com/watch?v=N3hjApR8o0E" target="_blank" rel="noopener">
+          <span class="video-tag">動画A</span>
+          <span class="video-title">1日で腹筋を割る鬼の筋トレ<span class="video-sub">（YouTubeで開く）</span></span>
+        </a>
+        <button type="button" class="secondary watch" data-embed="N3hjApR8o0E" data-title="動画A：1日で腹筋を割る鬼の筋トレ">ここで再生</button>
+      </div>
+      <div class="video-item">
+        <a class="video-main" href="https://www.youtube.com/watch?v=7E-JAyzbj7o" target="_blank" rel="noopener">
+          <span class="video-tag">動画B</span>
+          <span class="video-title">4分で限界突破腹筋トレーニング<span class="video-sub">（YouTubeで開く）</span></span>
+        </a>
+        <button type="button" class="secondary watch" data-embed="7E-JAyzbj7o" data-title="動画B：4分で限界突破腹筋トレーニング">ここで再生</button>
+      </div>
+    </div>
     <form id="logForm">
       <div class="grid">
         <div>
@@ -183,8 +227,8 @@
         <div>
           <label for="sessionType">セッションの種類</label>
           <select id="sessionType">
-            <option value="videoA">動画A</option>
-            <option value="videoB">動画B</option>
+            <option value="videoA">動画A（鬼の腹筋）</option>
+            <option value="videoB">動画B（4分腹筋）</option>
             <option value="light">軽い体幹</option>
             <option value="none">なし</option>
           </select>
@@ -284,6 +328,7 @@
     <div class="actions">
       <button type="button" class="secondary" id="exportBtn">JSONを書き出す</button>
       <button type="button" class="secondary" id="importBtn">JSONを読み込む</button>
+      <button type="button" class="secondary" id="shareBtn">このサイトを共有</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
     </div>
   </section>
@@ -296,14 +341,23 @@
   <footer>データはこの端末のブラウザにのみ保存されます。ブラウザのデータを消すと記録も消えるため、定期的な書き出しをおすすめします。</footer>
 </div>
 
+<dialog id="videoDialog" aria-labelledby="videoDialogTitle">
+  <div class="dialog-head">
+    <h3 id="videoDialogTitle">動画を再生</h3>
+    <button type="button" class="secondary small" id="videoCloseBtn">閉じる</button>
+  </div>
+  <div class="video-frame"><iframe id="videoFrame" title="トレーニング動画" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
+  <p class="note">再生を止めるときは「閉じる」を押してください。通信量が気になる場合はYouTubeアプリ／サイトで開くリンクをご利用ください。</p>
+</dialog>
+
 <script>
 (function () {
   'use strict';
 
   var STORAGE_KEY = 'absTrainingLogEntriesV1';
   var TYPE_LABELS = {
-    videoA: '動画A',
-    videoB: '動画B',
+    videoA: '動画A（鬼の腹筋）',
+    videoB: '動画B（4分腹筋）',
     light: '軽い体幹',
     none: 'なし'
   };
@@ -337,6 +391,53 @@
   var importFile = document.getElementById('importFile');
   document.getElementById('importBtn').addEventListener('click', function () { importFile.click(); });
   importFile.addEventListener('change', importJson);
+
+
+  // 動画の埋め込み再生（dialog + youtube-nocookie）
+  var videoDialog = document.getElementById('videoDialog');
+  var videoFrame = document.getElementById('videoFrame');
+  var videoDialogTitle = document.getElementById('videoDialogTitle');
+  document.querySelectorAll('button.watch').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      videoDialogTitle.textContent = btn.getAttribute('data-title');
+      videoFrame.src = 'https://www.youtube-nocookie.com/embed/' + btn.getAttribute('data-embed') + '?autoplay=1&rel=0';
+      if (typeof videoDialog.showModal === 'function') videoDialog.showModal();
+    });
+  });
+  function closeVideo() {
+    videoFrame.src = '';
+    if (videoDialog.open) videoDialog.close();
+  }
+  document.getElementById('videoCloseBtn').addEventListener('click', closeVideo);
+  videoDialog.addEventListener('click', function (ev) { if (ev.target === videoDialog) closeVideo(); });
+  videoDialog.addEventListener('close', function () { videoFrame.src = ''; });
+
+  // このサイトを共有（Web Share API、なければURLをコピー）
+  document.getElementById('shareBtn').addEventListener('click', function () {
+    var shareData = { title: document.title, text: '腹筋トレーニング記録', url: location.href };
+    if (navigator.share) {
+      navigator.share(shareData).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(location.href).then(function () { alert('URLをコピーしました。'); });
+    } else {
+      alert('このブラウザでは共有機能が使えません。URLをコピーして共有してください。');
+    }
+  });
+
+  // Ctrl+Enter / Cmd+Enter でフォームを送信
+  form.addEventListener('keydown', function (ev) {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
+      ev.preventDefault();
+      if (typeof form.requestSubmit === 'function') form.requestSubmit();
+    }
+  });
+
+  // PWA: Service Worker（http/https のときだけ登録）
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
 
   renderAll();
 
