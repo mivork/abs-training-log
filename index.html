@@ -7,118 +7,162 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #f4f6f8;
-    --card: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --line: #e5e7eb;
-    --accent: #2563eb;
-    --accent-dark: #1d4ed8;
-    --danger: #dc2626;
-    --radius: 12px;
+    /* デジタル庁デザインシステム（DADS）のカラートークンを参考 */
+    --blue-900: #0017c1;
+    --blue-1000: #00118f;
+    --blue-800: #0031d8;
+    --blue-100: #d9e6ff;
+    --blue-50: #e8f1fe;
+    --red-900: #ce0000;
+    --yellow-300: #ffd43d;
+    --gray-900: #1a1a1a;
+    --gray-800: #333333;
+    --gray-700: #4d4d4d;
+    --gray-600: #666666;
+    --gray-420: #949494;
+    --gray-300: #b3b3b3;
+    --gray-200: #cccccc;
+    --gray-100: #e6e6e6;
+    --gray-50: #f2f2f2;
+    --white: #ffffff;
+    --radius: 8px;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
     line-height: 1.6;
+    letter-spacing: 0.02em;
   }
-  .wrap {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 16px 14px 48px;
-  }
-  header { padding: 12px 2px 4px; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 16px 14px 48px; }
   header h1 { font-size: 1.45rem; margin: 0 0 4px; }
-  header p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  header p { margin: 0; color: var(--gray-700); font-size: 0.92rem; }
   .card {
-    background: var(--card);
-    border: 1px solid var(--line);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
     border-radius: var(--radius);
     padding: 16px;
     margin-top: 16px;
   }
-  .card h2 { font-size: 1.1rem; margin: 0 0 12px; }
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  @media (max-width: 560px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-  label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+  .card h2 { font-size: 1.05rem; margin: 0 0 12px; font-weight: 700; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 4px; color: var(--gray-800); }
   label.check { font-weight: 400; display: flex; align-items: center; gap: 8px; margin: 0; }
   input[type="date"], input[type="number"], select, textarea {
     width: 100%;
-    padding: 9px 10px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    padding: 9px 12px;
+    border: 1px solid var(--gray-600);
+    border-radius: var(--radius);
     font-size: 1rem;
-    background: #fff;
-    color: var(--text);
+    background: var(--white);
+    color: var(--gray-900);
+    font: inherit;
+  }
+  input:hover, select:hover, textarea:hover { border-color: var(--gray-900); }
+  :focus-visible {
+    outline: 4px solid var(--gray-900);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--yellow-300);
   }
   textarea { min-height: 64px; resize: vertical; }
-  input[type="checkbox"] { width: 20px; height: 20px; flex: none; }
+  input[type="checkbox"] { width: 20px; height: 20px; flex: none; accent-color: var(--blue-900); }
   .checks { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
-  .note { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
-  .warn { font-size: 0.8rem; color: #b45309; margin-top: 4px; }
+  .note { font-size: 0.8rem; color: var(--gray-700); margin-top: 4px; }
+  .warn { font-size: 0.8rem; color: #927200; margin-top: 4px; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
   button {
-    border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    padding: 10px 20px;
     font-size: 0.95rem;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    background: var(--accent);
-    color: #fff;
+    background: var(--blue-900);
+    color: var(--white);
   }
-  button:hover { background: var(--accent-dark); }
-  button.secondary { background: #e5e7eb; color: var(--text); }
-  button.secondary:hover { background: #d1d5db; }
-  button.danger { background: #fff; color: var(--danger); border: 1px solid var(--danger); padding: 5px 12px; font-size: 0.85rem; }
+  button:hover { background: var(--blue-1000); text-decoration: underline; }
+  button.secondary { background: var(--white); color: var(--blue-900); border: 1px solid var(--blue-900); }
+  button.secondary:hover { background: var(--blue-100); }
+  button.danger { background: var(--white); color: var(--red-900); border: 1px solid var(--red-900); padding: 5px 12px; font-size: 0.85rem; }
+  button.danger:hover { background: #fdeeee; }
   button.small { padding: 5px 12px; font-size: 0.85rem; }
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  @media (max-width: 560px) {
-    .stats-grid { grid-template-columns: 1fr; }
-  }
-  .stat {
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px;
-  }
-  .stat .label { font-size: 0.82rem; color: var(--muted); }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 12px; background: var(--white); }
+  .stat .label { font-size: 0.82rem; color: var(--gray-700); font-weight: 700; }
   .stat .value { font-size: 1.35rem; font-weight: 700; margin-top: 2px; }
-  .stat .sub { font-size: 0.82rem; color: var(--muted); }
+  .stat .sub { font-size: 0.82rem; color: var(--gray-700); }
   .chart-box { margin-top: 8px; }
-  .chart-box h3 { font-size: 0.98rem; margin: 14px 0 6px; }
-  .entry {
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 10px;
-  }
+  .chart-box h3 { font-size: 0.95rem; margin: 14px 0 6px; }
+  .chart-canvas { position: relative; height: 220px; }
+  .entry { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 12px; margin-top: 10px; }
   .entry-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
   .entry-date { font-weight: 700; }
-  .badge {
-    font-size: 0.78rem;
-    background: #eff6ff;
-    color: var(--accent-dark);
-    border-radius: 999px;
-    padding: 1px 9px;
-  }
-  .badge.off { background: #f3f4f6; color: var(--muted); }
-  .entry-meta { font-size: 0.88rem; color: var(--text); margin-top: 4px; }
+  .badge { font-size: 0.78rem; background: var(--blue-50); color: var(--blue-900); border-radius: 999px; padding: 1px 9px; font-weight: 700; }
+  .badge.off { background: var(--gray-100); color: var(--gray-700); }
+  .entry-meta { font-size: 0.88rem; margin-top: 4px; }
   .entry-memo { font-size: 0.88rem; margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
   .entry-actions { display: flex; gap: 8px; margin-top: 8px; }
-  .empty { color: var(--muted); font-size: 0.92rem; padding: 8px 0; }
-  footer { color: var(--muted); font-size: 0.8rem; margin-top: 20px; text-align: center; }
+  .empty { color: var(--gray-700); font-size: 0.92rem; padding: 8px 0; }
+  footer { color: var(--gray-700); font-size: 0.8rem; margin-top: 20px; text-align: center; }
+
+  /* ===== デスクトップ: 1画面に収めるダッシュボード配置 ===== */
+  @media (min-width: 1100px) and (min-height: 620px) {
+    body { overflow: hidden; }
+    .wrap {
+      max-width: none;
+      height: 100dvh;
+      margin: 0;
+      padding: 10px 14px 12px;
+      display: grid;
+      grid-template-columns: 350px minmax(0, 1fr) 330px;
+      grid-template-rows: auto minmax(0, auto) minmax(0, 1fr) auto;
+      grid-template-areas:
+        "header header header"
+        "form stats entries"
+        "form charts entries"
+        "form charts io";
+      gap: 10px 12px;
+    }
+    header { grid-area: header; display: flex; align-items: baseline; gap: 16px; padding: 0 2px; }
+    header h1 { font-size: 1.25rem; margin: 0; white-space: nowrap; }
+    header p { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card { margin-top: 0; padding: 12px 14px; min-height: 0; }
+    .card h2 { font-size: 0.98rem; margin-bottom: 8px; }
+    .area-form { grid-area: form; overflow-y: auto; }
+    .area-stats { grid-area: stats; }
+    .area-charts { grid-area: charts; display: flex; flex-direction: column; }
+    .area-entries { grid-area: entries; display: flex; flex-direction: column; }
+    .area-io { grid-area: io; }
+    footer { display: none; }
+    .area-form .grid { gap: 8px 10px; }
+    .area-form label { font-size: 0.82rem; margin-bottom: 2px; }
+    .area-form input[type="date"], .area-form input[type="number"], .area-form select { padding: 6px 10px; font-size: 0.95rem; }
+    .area-form textarea { min-height: 44px; padding: 6px 10px; }
+    .area-form .actions { margin-top: 10px; }
+    .area-form button { padding: 8px 16px; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .stat { padding: 8px 10px; }
+    .stat .value { font-size: 1.15rem; }
+    .stat .label, .stat .sub { font-size: 0.75rem; }
+    .area-stats .note { display: none; }
+    .area-charts .chart-box { flex: 1 1 0; display: flex; flex-direction: column; margin-top: 0; min-height: 0; }
+    .area-charts .chart-box h3 { margin: 4px 0 4px; font-size: 0.9rem; }
+    .area-charts .chart-canvas { flex: 1 1 0; height: auto; min-height: 0; }
+    .area-entries #entryList { overflow-y: auto; flex: 1 1 0; min-height: 0; padding-right: 2px; }
+    .entry { padding: 9px 10px; margin-top: 8px; }
+    .entry-meta, .entry-memo { font-size: 0.82rem; }
+    .area-io .note { display: none; }
+    .area-io .actions { margin-top: 0; }
+    .area-io button { padding: 7px 14px; font-size: 0.88rem; }
+  }
+  @media (max-width: 560px) {
+    .grid, .stats-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -128,7 +172,7 @@
     <p>トレーニング・体重・睡眠などを日ごとに記録して、変化の要因を切り分けるためのツールです。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
   </header>
 
-  <section class="card">
+  <section class="card area-form">
     <h2 id="formTitle">記録を追加</h2>
     <form id="logForm">
       <div class="grid">
@@ -194,7 +238,7 @@
     </form>
   </section>
 
-  <section class="card">
+  <section class="card area-stats">
     <h2>切り分けメモ（集計）</h2>
     <div class="stats-grid">
       <div class="stat">
@@ -221,20 +265,20 @@
     <p class="note">セッション数が多い週に体重が下がっていればトレーニングの影響らしく、そうでなければ睡眠・外食・歩行など他の要因も疑えます。あくまで目安です。</p>
   </section>
 
-  <section class="card">
+  <section class="card area-charts">
     <h2>グラフ</h2>
     <p class="note" id="chartNote" style="display:none;">グラフ用ライブラリを読み込めませんでした（通信環境をご確認ください）。記録と集計はそのまま使えます。</p>
     <div class="chart-box">
       <h3>体重の推移（●が大きい日はトレーニング実施日）</h3>
-      <canvas id="weightChart" height="220"></canvas>
+      <div class="chart-canvas"><canvas id="weightChart"></canvas></div>
     </div>
     <div class="chart-box">
       <h3>週ごとのセッション数</h3>
-      <canvas id="weeklyChart" height="220"></canvas>
+      <div class="chart-canvas"><canvas id="weeklyChart"></canvas></div>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card area-io">
     <h2>データの入出力</h2>
     <p class="note">バックアップや端末の移行には、JSONで書き出して保存してください。読み込みは現在のデータを置き換えます。</p>
     <div class="actions">
@@ -244,7 +288,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card area-entries">
     <h2>記録一覧</h2>
     <div id="entryList"></div>
   </section>
@@ -600,7 +644,7 @@
     var withWeight = sortedEntries(false).filter(function (e) { return e.weight !== null; });
     var labels = withWeight.map(function (e) { return e.date; });
     var values = withWeight.map(function (e) { return e.weight; });
-    var pointColors = withWeight.map(function (e) { return isSession(e) ? '#dc2626' : '#2563eb'; });
+    var pointColors = withWeight.map(function (e) { return isSession(e) ? '#ce0000' : '#0017c1'; });
     var pointSizes = withWeight.map(function (e) { return isSession(e) ? 7 : 4; });
 
     var wCtx = document.getElementById('weightChart').getContext('2d');
@@ -612,7 +656,7 @@
         datasets: [{
           label: '体重 (kg)',
           data: values,
-          borderColor: '#2563eb',
+          borderColor: '#0017c1',
           backgroundColor: pointColors,
           pointBackgroundColor: pointColors,
           pointBorderColor: pointColors,
@@ -624,6 +668,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
           y: { title: { display: true, text: 'kg' } },
@@ -650,11 +695,12 @@
         datasets: [{
           label: 'セッション数',
           data: weekCounts,
-          backgroundColor: '#2563eb'
+          backgroundColor: '#0017c1'
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
           y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: '回' } },
