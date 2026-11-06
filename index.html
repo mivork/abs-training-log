@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>腹筋トレーニング記録</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+    --danger: #dc2626;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 16px 14px 48px;
+  }
+  header { padding: 12px 2px 4px; }
+  header h1 { font-size: 1.45rem; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .card h2 { font-size: 1.1rem; margin: 0 0 12px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+  label.check { font-weight: 400; display: flex; align-items: center; gap: 8px; margin: 0; }
+  input[type="date"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #fff;
+    color: var(--text);
+  }
+  textarea { min-height: 64px; resize: vertical; }
+  input[type="checkbox"] { width: 20px; height: 20px; flex: none; }
+  .checks { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+  .note { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .warn { font-size: 0.8rem; color: #b45309; margin-top: 4px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+  }
+  button:hover { background: var(--accent-dark); }
+  button.secondary { background: #e5e7eb; color: var(--text); }
+  button.secondary:hover { background: #d1d5db; }
+  button.danger { background: #fff; color: var(--danger); border: 1px solid var(--danger); padding: 5px 12px; font-size: 0.85rem; }
+  button.small { padding: 5px 12px; font-size: 0.85rem; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 560px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+  .stat {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .stat .label { font-size: 0.82rem; color: var(--muted); }
+  .stat .value { font-size: 1.35rem; font-weight: 700; margin-top: 2px; }
+  .stat .sub { font-size: 0.82rem; color: var(--muted); }
+  .chart-box { margin-top: 8px; }
+  .chart-box h3 { font-size: 0.98rem; margin: 14px 0 6px; }
+  .entry {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+  }
+  .entry-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+  .entry-date { font-weight: 700; }
+  .badge {
+    font-size: 0.78rem;
+    background: #eff6ff;
+    color: var(--accent-dark);
+    border-radius: 999px;
+    padding: 1px 9px;
+  }
+  .badge.off { background: #f3f4f6; color: var(--muted); }
+  .entry-meta { font-size: 0.88rem; color: var(--text); margin-top: 4px; }
+  .entry-memo { font-size: 0.88rem; margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
+  .entry-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .empty { color: var(--muted); font-size: 0.92rem; padding: 8px 0; }
+  footer { color: var(--muted); font-size: 0.8rem; margin-top: 20px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>腹筋トレーニング記録</h1>
+    <p>トレーニング・体重・睡眠などを日ごとに記録して、変化の要因を切り分けるためのツールです。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
+  </header>
+
+  <section class="card">
+    <h2 id="formTitle">記録を追加</h2>
+    <form id="logForm">
+      <div class="grid">
+        <div>
+          <label for="date">日付</label>
+          <input type="date" id="date" required>
+        </div>
+        <div>
+          <label for="sessionType">セッションの種類</label>
+          <select id="sessionType">
+            <option value="videoA">動画A</option>
+            <option value="videoB">動画B</option>
+            <option value="light">軽い体幹</option>
+            <option value="none">なし</option>
+          </select>
+        </div>
+        <div>
+          <label for="soreness">翌日の筋肉痛（0〜3）</label>
+          <select id="soreness">
+            <option value="0">0：なし</option>
+            <option value="1">1：軽い</option>
+            <option value="2">2：はっきりある</option>
+            <option value="3">3：強い</option>
+          </select>
+        </div>
+        <div>
+          <label for="backPain">腰の違和感（0〜3）</label>
+          <select id="backPain">
+            <option value="0">0：なし</option>
+            <option value="1">1：軽い</option>
+            <option value="2">2：はっきりある</option>
+            <option value="3">3：強い</option>
+          </select>
+        </div>
+        <div>
+          <label for="weight">体重（kg、任意）</label>
+          <input type="number" id="weight" step="0.01" min="0" max="300" placeholder="例：その日の測定値">
+        </div>
+        <div>
+          <label for="sleep">睡眠時間（時間、任意）</label>
+          <input type="number" id="sleep" step="0.1" min="0" max="24" placeholder="例：7.5">
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="completed"> 実施した</label>
+          <label class="check"><input type="checkbox" id="eatingOut"> 外食した</label>
+          <label class="check"><input type="checkbox" id="longWalk"> 長く歩いた</label>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <label for="memo">メモ（任意）</label>
+        <textarea id="memo" placeholder="体感、食事の内容、気づいたことなど"></textarea>
+        <p class="warn">注意：メモには個人情報（名前・住所・学校名・場所など）を書かないでください。スクリーンショットを共有すると見えてしまいます。</p>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="submitBtn">保存する</button>
+        <button type="button" class="secondary" id="cancelEditBtn" style="display:none;">編集をキャンセル</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>切り分けメモ（集計）</h2>
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="label">総セッション数</div>
+        <div class="value" id="statTotal">-</div>
+        <div class="sub">「実施した」セッションの累計</div>
+      </div>
+      <div class="stat">
+        <div class="label">直近28日のセッション数</div>
+        <div class="value" id="statRecent">-</div>
+        <div class="sub">今日を含む過去28日間</div>
+      </div>
+      <div class="stat">
+        <div class="label">体重の変化</div>
+        <div class="value" id="statWeightChange">-</div>
+        <div class="sub" id="statWeightChangeSub">最初の体重記録からの差</div>
+      </div>
+      <div class="stat">
+        <div class="label">週のセッション数と体重の平均</div>
+        <div class="value" id="statAvgCompare" style="font-size:1rem;">-</div>
+        <div class="sub">週4回以上の週と、それ未満の週で比べます</div>
+      </div>
+    </div>
+    <p class="note">セッション数が多い週に体重が下がっていればトレーニングの影響らしく、そうでなければ睡眠・外食・歩行など他の要因も疑えます。あくまで目安です。</p>
+  </section>
+
+  <section class="card">
+    <h2>グラフ</h2>
+    <p class="note" id="chartNote" style="display:none;">グラフ用ライブラリを読み込めませんでした（通信環境をご確認ください）。記録と集計はそのまま使えます。</p>
+    <div class="chart-box">
+      <h3>体重の推移（●が大きい日はトレーニング実施日）</h3>
+      <canvas id="weightChart" height="220"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>週ごとのセッション数</h3>
+      <canvas id="weeklyChart" height="220"></canvas>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>データの入出力</h2>
+    <p class="note">バックアップや端末の移行には、JSONで書き出して保存してください。読み込みは現在のデータを置き換えます。</p>
+    <div class="actions">
+      <button type="button" class="secondary" id="exportBtn">JSONを書き出す</button>
+      <button type="button" class="secondary" id="importBtn">JSONを読み込む</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>記録一覧</h2>
+    <div id="entryList"></div>
+  </section>
+
+  <footer>データはこの端末のブラウザにのみ保存されます。ブラウザのデータを消すと記録も消えるため、定期的な書き出しをおすすめします。</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'absTrainingLogEntriesV1';
+  var TYPE_LABELS = {
+    videoA: '動画A',
+    videoB: '動画B',
+    light: '軽い体幹',
+    none: 'なし'
+  };
+
+  var entries = loadEntries();
+  var editingId = null;
+  var weightChart = null;
+  var weeklyChart = null;
+
+  var form = document.getElementById('logForm');
+  var dateInput = document.getElementById('date');
+  var typeInput = document.getElementById('sessionType');
+  var sorenessInput = document.getElementById('soreness');
+  var backInput = document.getElementById('backPain');
+  var weightInput = document.getElementById('weight');
+  var sleepInput = document.getElementById('sleep');
+  var completedInput = document.getElementById('completed');
+  var eatingOutInput = document.getElementById('eatingOut');
+  var longWalkInput = document.getElementById('longWalk');
+  var memoInput = document.getElementById('memo');
+  var submitBtn = document.getElementById('submitBtn');
+  var cancelEditBtn = document.getElementById('cancelEditBtn');
+  var formTitle = document.getElementById('formTitle');
+  var listEl = document.getElementById('entryList');
+
+  dateInput.value = todayString();
+
+  form.addEventListener('submit', onSubmit);
+  cancelEditBtn.addEventListener('click', resetForm);
+  document.getElementById('exportBtn').addEventListener('click', exportJson);
+  var importFile = document.getElementById('importFile');
+  document.getElementById('importBtn').addEventListener('click', function () { importFile.click(); });
+  importFile.addEventListener('change', importJson);
+
+  renderAll();
+
+  function loadEntries() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map(normalizeEntry).filter(function (e) { return e !== null; });
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveEntries() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  function normalizeEntry(item) {
+    if (!item || typeof item !== 'object') return null;
+    if (typeof item.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) return null;
+    var type = TYPE_LABELS.hasOwnProperty(item.sessionType) ? item.sessionType : 'none';
+    return {
+      id: typeof item.id === 'string' && item.id ? item.id : makeId(),
+      date: item.date,
+      sessionType: type,
+      completed: !!item.completed,
+      soreness: clampScale(item.soreness),
+      backPain: clampScale(item.backPain),
+      weight: toNumberOrNull(item.weight),
+      sleep: toNumberOrNull(item.sleep),
+      eatingOut: !!item.eatingOut,
+      longWalk: !!item.longWalk,
+      memo: typeof item.memo === 'string' ? item.memo : ''
+    };
+  }
+
+  function clampScale(v) {
+    var n = parseInt(v, 10);
+    if (isNaN(n) || n < 0) return 0;
+    if (n > 3) return 3;
+    return n;
+  }
+
+  function toNumberOrNull(v) {
+    if (v === null || v === undefined || v === '') return null;
+    var n = Number(v);
+    return isNaN(n) ? null : n;
+  }
+
+  function makeId() {
+    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000000000).toString(36);
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  function formatDateObj(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function todayString() {
+    return formatDateObj(new Date());
+  }
+
+  function parseDate(dateStr) {
+    return new Date(dateStr + 'T00:00:00');
+  }
+
+  function weekStartString(dateStr) {
+    var d = parseDate(dateStr);
+    var diff = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - diff);
+    return formatDateObj(d);
+  }
+
+  function isSession(entry) {
+    return !!entry.completed && entry.sessionType !== 'none';
+  }
+
+  function onSubmit(ev) {
+    ev.preventDefault();
+    var data = {
+      date: dateInput.value,
+      sessionType: typeInput.value,
+      completed: completedInput.checked,
+      soreness: clampScale(sorenessInput.value),
+      backPain: clampScale(backInput.value),
+      weight: toNumberOrNull(weightInput.value),
+      sleep: toNumberOrNull(sleepInput.value),
+      eatingOut: eatingOutInput.checked,
+      longWalk: longWalkInput.checked,
+      memo: memoInput.value.trim()
+    };
+    if (!data.date) {
+      alert('日付を入力してください。');
+      return;
+    }
+    if (editingId) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].id === editingId) {
+          data.id = editingId;
+          entries[i] = data;
+          break;
+        }
+      }
+    } else {
+      var dupIndex = -1;
+      for (var j = 0; j < entries.length; j++) {
+        if (entries[j].date === data.date) { dupIndex = j; break; }
+      }
+      if (dupIndex >= 0) {
+        if (!window.confirm('同じ日付の記録がすでにあります。置き換えますか？')) return;
+        data.id = entries[dupIndex].id;
+        entries[dupIndex] = data;
+      } else {
+        data.id = makeId();
+        entries.push(data);
+      }
+    }
+    saveEntries();
+    resetForm();
+    renderAll();
+  }
+
+  function resetForm() {
+    editingId = null;
+    form.reset();
+    dateInput.value = todayString();
+    submitBtn.textContent = '保存する';
+    formTitle.textContent = '記録を追加';
+    cancelEditBtn.style.display = 'none';
+  }
+
+  function startEdit(id) {
+    var entry = findById(id);
+    if (!entry) return;
+    editingId = id;
+    dateInput.value = entry.date;
+    typeInput.value = entry.sessionType;
+    sorenessInput.value = String(entry.soreness);
+    backInput.value = String(entry.backPain);
+    weightInput.value = entry.weight === null ? '' : String(entry.weight);
+    sleepInput.value = entry.sleep === null ? '' : String(entry.sleep);
+    completedInput.checked = !!entry.completed;
+    eatingOutInput.checked = !!entry.eatingOut;
+    longWalkInput.checked = !!entry.longWalk;
+    memoInput.value = entry.memo || '';
+    submitBtn.textContent = '更新する';
+    formTitle.textContent = '記録を編集';
+    cancelEditBtn.style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function deleteEntry(id) {
+    var entry = findById(id);
+    if (!entry) return;
+    if (!window.confirm(entry.date + ' の記録を削除しますか？')) return;
+    entries = entries.filter(function (e) { return e.id !== id; });
+    if (editingId === id) resetForm();
+    saveEntries();
+    renderAll();
+  }
+
+  function findById(id) {
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].id === id) return entries[i];
+    }
+    return null;
+  }
+
+  function sortedEntries(desc) {
+    var copy = entries.slice();
+    copy.sort(function (a, b) {
+      if (a.date < b.date) return desc ? 1 : -1;
+      if (a.date > b.date) return desc ? -1 : 1;
+      return 0;
+    });
+    return copy;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderAll() {
+    renderList();
+    renderStats();
+    renderCharts();
+  }
+
+  function renderList() {
+    var sorted = sortedEntries(true);
+    if (sorted.length === 0) {
+      listEl.innerHTML = '<p class="empty">まだ記録がありません。上のフォームから最初の記録を追加してください。</p>';
+      return;
+    }
+    var htmlParts = [];
+    sorted.forEach(function (entry) {
+      var session = isSession(entry);
+      var meta = [];
+      meta.push('筋肉痛（翌日）: ' + entry.soreness);
+      meta.push('腰の違和感: ' + entry.backPain);
+      if (entry.weight !== null) meta.push('体重: ' + entry.weight + ' kg');
+      if (entry.sleep !== null) meta.push('睡眠: ' + entry.sleep + ' 時間');
+      if (entry.eatingOut) meta.push('外食あり');
+      if (entry.longWalk) meta.push('長く歩いた');
+      var html = '';
+      html += '<div class="entry">';
+      html += '<div class="entry-head">';
+      html += '<span class="entry-date">' + escapeHtml(entry.date) + '</span>';
+      html += '<span class="badge' + (session ? '' : ' off') + '">' + escapeHtml(TYPE_LABELS[entry.sessionType]) + (session ? '・実施' : '') + '</span>';
+      html += '</div>';
+      html += '<div class="entry-meta">' + escapeHtml(meta.join(' / ')) + '</div>';
+      if (entry.memo) {
+        html += '<div class="entry-memo">' + escapeHtml(entry.memo) + '</div>';
+      }
+      html += '<div class="entry-actions">';
+      html += '<button type="button" class="secondary small" data-action="edit" data-id="' + escapeHtml(entry.id) + '">編集</button>';
+      html += '<button type="button" class="danger" data-action="delete" data-id="' + escapeHtml(entry.id) + '">削除</button>';
+      html += '</div>';
+      html += '</div>';
+      htmlParts.push(html);
+    });
+    listEl.innerHTML = htmlParts.join('');
+    var buttons = listEl.querySelectorAll('button[data-action]');
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (btn.getAttribute('data-action') === 'edit') startEdit(btn.getAttribute('data-id'));
+        if (btn.getAttribute('data-action') === 'delete') deleteEntry(btn.getAttribute('data-id'));
+      });
+    });
+  }
+
+  function renderStats() {
+    var totalEl = document.getElementById('statTotal');
+    var recentEl = document.getElementById('statRecent');
+    var changeEl = document.getElementById('statWeightChange');
+    var changeSubEl = document.getElementById('statWeightChangeSub');
+    var avgEl = document.getElementById('statAvgCompare');
+
+    var sessions = entries.filter(isSession);
+    totalEl.textContent = String(sessions.length) + ' 回';
+
+    var start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - 27);
+    var recentCount = sessions.filter(function (e) {
+      return parseDate(e.date) >= start;
+    }).length;
+    recentEl.textContent = String(recentCount) + ' 回';
+
+    var withWeight = sortedEntries(false).filter(function (e) { return e.weight !== null; });
+    if (withWeight.length < 2) {
+      changeEl.textContent = 'データが足りません';
+      changeSubEl.textContent = '体重の記録が2件以上あると変化を表示します';
+    } else {
+      var first = withWeight[0];
+      var last = withWeight[withWeight.length - 1];
+      var diff = last.weight - first.weight;
+      var sign = diff > 0 ? '+' : '';
+      changeEl.textContent = sign + diff.toFixed(2) + ' kg';
+      changeSubEl.textContent = first.date + ' の ' + first.weight + ' kg から ' + last.date + ' の ' + last.weight + ' kg';
+    }
+
+    var weekMap = {};
+    entries.forEach(function (e) {
+      var wk = weekStartString(e.date);
+      if (!weekMap[wk]) weekMap[wk] = { sessions: 0, weights: [] };
+      if (isSession(e)) weekMap[wk].sessions += 1;
+      if (e.weight !== null) weekMap[wk].weights.push(e.weight);
+    });
+    var highWeights = [];
+    var lowWeights = [];
+    Object.keys(weekMap).forEach(function (wk) {
+      var bucket = weekMap[wk];
+      var target = bucket.sessions >= 4 ? highWeights : lowWeights;
+      bucket.weights.forEach(function (w) { target.push(w); });
+    });
+    if (highWeights.length === 0 || lowWeights.length === 0) {
+      avgEl.textContent = 'データが足りません（両方の週の体重記録が必要です）';
+    } else {
+      var highAvg = average(highWeights);
+      var lowAvg = average(lowWeights);
+      avgEl.textContent = '週4回以上: 平均 ' + highAvg.toFixed(2) + ' kg / 週4回未満: 平均 ' + lowAvg.toFixed(2) + ' kg';
+    }
+  }
+
+  function average(nums) {
+    var sum = 0;
+    nums.forEach(function (n) { sum += n; });
+    return nums.length ? sum / nums.length : 0;
+  }
+
+  function renderCharts() {
+    if (typeof Chart === 'undefined') {
+      document.getElementById('chartNote').style.display = '';
+      return;
+    }
+    var withWeight = sortedEntries(false).filter(function (e) { return e.weight !== null; });
+    var labels = withWeight.map(function (e) { return e.date; });
+    var values = withWeight.map(function (e) { return e.weight; });
+    var pointColors = withWeight.map(function (e) { return isSession(e) ? '#dc2626' : '#2563eb'; });
+    var pointSizes = withWeight.map(function (e) { return isSession(e) ? 7 : 4; });
+
+    var wCtx = document.getElementById('weightChart').getContext('2d');
+    if (weightChart) weightChart.destroy();
+    weightChart = new Chart(wCtx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '体重 (kg)',
+          data: values,
+          borderColor: '#2563eb',
+          backgroundColor: pointColors,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: pointSizes,
+          pointHoverRadius: 8,
+          tension: 0.15,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { title: { display: true, text: 'kg' } },
+          x: { ticks: { maxTicksLimit: 8 } }
+        }
+      }
+    });
+
+    var weekMap = {};
+    entries.forEach(function (e) {
+      if (!isSession(e)) return;
+      var wk = weekStartString(e.date);
+      weekMap[wk] = (weekMap[wk] || 0) + 1;
+    });
+    var weekKeys = Object.keys(weekMap).sort();
+    var weekCounts = weekKeys.map(function (k) { return weekMap[k]; });
+
+    var sCtx = document.getElementById('weeklyChart').getContext('2d');
+    if (weeklyChart) weeklyChart.destroy();
+    weeklyChart = new Chart(sCtx, {
+      type: 'bar',
+      data: {
+        labels: weekKeys,
+        datasets: [{
+          label: 'セッション数',
+          data: weekCounts,
+          backgroundColor: '#2563eb'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: '回' } },
+          x: { ticks: { maxTicksLimit: 8 } }
+        }
+      }
+    });
+  }
+
+  function exportJson() {
+    var payload = JSON.stringify(sortedEntries(false), null, 2);
+    var blob = new Blob([payload], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'abs-training-log.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+  }
+
+  function importJson() {
+    var file = importFile.files && importFile.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = JSON.parse(String(reader.result || ''));
+        if (!Array.isArray(parsed)) throw new Error('not an array');
+        var cleaned = parsed.map(normalizeEntry).filter(function (e) { return e !== null; });
+        if (cleaned.length === 0) {
+          alert('読み込める記録がありませんでした。');
+          return;
+        }
+        if (!window.confirm(cleaned.length + ' 件の記録を読み込み、現在のデータを置き換えますか？')) return;
+        entries = cleaned;
+        saveEntries();
+        resetForm();
+        renderAll();
+        alert('読み込みが完了しました。');
+      } catch (err) {
+        alert('JSONの読み込みに失敗しました。ファイルの形式をご確認ください。');
+      } finally {
+        importFile.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+})();
+</script>
+</body>
+</html>
