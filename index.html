@@ -116,6 +116,17 @@
 
 
 
+
+  /* ===== 入出力／同期タブ切り替え ===== */
+  .io-tabs { display: flex; gap: 8px; margin: 2px 0 12px; }
+  .io-tab {
+    flex: 1 1 0; background: var(--white); color: var(--blue);
+    border: 1px solid var(--blue); border-radius: var(--radius);
+    padding: 8px 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  }
+  .io-tab.is-active { background: var(--blue); color: var(--white); }
+  .io-panel[hidden] { display: none; }
+  .sync-box.io-panel { margin-top: 0; border-top: none; padding-top: 0; }
   /* ===== プライベート同期 ===== */
   .sync-box { margin-top: 14px; border-top: 1px solid var(--gray-200); padding-top: 12px; }
   .sync-box h3 { font-size: 0.95rem; margin: 0 0 8px; }
@@ -332,7 +343,12 @@
   </section>
 
   <section class="card area-io">
-    <h2>データの入出力</h2>
+    <h2>データの入出力・同期</h2>
+    <div class="io-tabs" role="tablist" aria-label="入出力と同期の切り替え">
+      <button type="button" class="io-tab is-active" id="ioTabMain" role="tab" aria-selected="true" aria-controls="ioPanelMain">入出力</button>
+      <button type="button" class="io-tab" id="ioTabSync" role="tab" aria-selected="false" aria-controls="ioPanelSync">プライベート同期</button>
+    </div>
+    <div class="io-panel" id="ioPanelMain" role="tabpanel">
     <p class="note">バックアップや端末の移行には、JSONで書き出して保存してください。読み込みは現在のデータを置き換えます。</p>
     <div class="actions">
       <button type="button" class="secondary" id="exportBtn">JSONを書き出す</button>
@@ -340,7 +356,8 @@
       <button type="button" class="secondary" id="shareBtn">このサイトを共有</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
     </div>
-    <div class="sync-box">
+    </div>
+    <div class="sync-box io-panel" id="ioPanelSync" role="tabpanel" hidden>
       <h3>プライベート同期（GitHub・非公開リポジトリ）</h3>
       <label for="syncRepo">同期先リポジトリ（owner/repo）</label>
       <input type="text" id="syncRepo" autocomplete="off" spellcheck="false">
@@ -454,6 +471,24 @@
     }
   });
 
+
+
+  // ===== 入出力／同期タブ切り替え =====
+  var ioTabMain = document.getElementById('ioTabMain');
+  var ioTabSync = document.getElementById('ioTabSync');
+  var ioPanelMain = document.getElementById('ioPanelMain');
+  var ioPanelSync = document.getElementById('ioPanelSync');
+  function selectIoTab(which) {
+    var main = which === 'main';
+    ioPanelMain.hidden = !main;
+    ioPanelSync.hidden = main;
+    ioTabMain.classList.toggle('is-active', main);
+    ioTabSync.classList.toggle('is-active', !main);
+    ioTabMain.setAttribute('aria-selected', main ? 'true' : 'false');
+    ioTabSync.setAttribute('aria-selected', main ? 'false' : 'true');
+  }
+  ioTabMain.addEventListener('click', function () { selectIoTab('main'); });
+  ioTabSync.addEventListener('click', function () { selectIoTab('sync'); });
 
   // ===== プライベート同期（GitHub Contents API） =====
   var SYNC_TOKEN_KEY = 'absTrainingLogSyncTokenV1';
