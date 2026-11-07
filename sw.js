@@ -1,44 +1,54 @@
-'use strict';
+/**
+ * Service Worker — network-first 戦略
+ * CACHE_NAME: abs-training-log-v4
+ */
+const CACHE_NAME = 'abs-training-log-v4';
 
-// ページ本体はネットワーク優先（更新がすぐ反映されるように）し、
-// 取得できないときだけキャッシュを使ってオフラインでも開けるようにする。
-var CACHE_NAME = 'abs-training-log-v3';
-var APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const CACHE_TARGETS = [
+  './',
+  'index.html',
+  'css/style.css',
+  'css/tokens.css',
+  'css/base.css',
+  'js/main.js',
+  'icon.svg',
+  'manifest.webmanifest'
+];
 
-self.addEventListener('install', function (event) {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(APP_SHELL);
-    }).then(function () {
-      return self.skipWaiting();
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHE_TARGETS))
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', function (event) {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(function (keys) {
-      return Promise.all(keys.map(function (key) {
-        if (key !== CACHE_NAME) return caches.delete(key);
-        return null;
-      }));
-    }).then(function () {
-      return self.clients.claim();
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      );
     })
   );
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', function (event) {
+self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // CDN（Chart.js など外部リソース）はキャッシュ対象外
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
   event.respondWith(
-    fetch(event.request).then(function (response) {
-      var copy = response.clone();
-      caches.open(CACHE_NAME).then(function (cache) {
-        cache.put(event.request, copy);
-      });
-      return response;
-    }).catch(function () {
-      return caches.match(event.request, { ignoreSearch: true });
-    })
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, clone);
+        });
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

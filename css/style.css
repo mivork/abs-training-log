@@ -1,0 +1,750 @@
+/* css/style.css
+ * メインスタイルシート（@import で tokens + base を束ねる） */
+
+@import url("tokens.css");
+@import url("base.css");
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+}
+
+.page__main {
+  flex: 1;
+}
+
+.page__container {
+  max-inline-size: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--content-padding);
+  padding-block: var(--space-l);
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.header {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding-block: var(--space-s);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 100;
+}
+
+.header__inner {
+  max-inline-size: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--content-padding);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+}
+
+.header__title {
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.header__nav {
+  display: none;
+}
+
+.header__nav-list {
+  display: flex;
+  gap: var(--space-xs);
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.header__nav-link {
+  color: var(--color-white);
+  text-decoration: none;
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-2xs) var(--space-xs);
+  border-radius: var(--radius-s);
+  transition: background-color var(--transition-fast);
+}
+
+.header__nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+}
+
+.header__nav-link:focus-visible {
+  outline-color: var(--color-white);
+}
+
+@media (min-width: 64rem) {
+  .header__nav {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+
+.hero {
+  background-color: var(--color-bg);
+  border-block-end: 0.0625rem solid var(--color-border);
+  padding-block: var(--space-2xl);
+}
+
+.hero__inner {
+  max-inline-size: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--content-padding);
+}
+
+.hero__heading {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  margin-block-end: var(--space-s);
+}
+
+.hero__description {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-loose);
+  max-inline-size: 40rem;
+  margin-block-end: var(--space-l);
+}
+
+.hero__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-s);
+}
+
+.hero-stat {
+  background-color: var(--color-bg-alt);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-m);
+  padding: var(--space-s) var(--space-m);
+  text-align: center;
+}
+
+.hero-stat__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.hero-stat__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ==========================================================================
+   Section (共通)
+   ========================================================================== */
+
+.section {
+  padding-block: var(--space-xl);
+}
+
+.section + .section {
+  border-block-start: 0.0625rem solid var(--color-border);
+}
+
+.section__heading {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-block-end: var(--space-l);
+  padding-block-end: var(--space-xs);
+  border-block-end: 0.1875rem solid var(--color-primary);
+  display: inline-block;
+}
+
+.section__note {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-start: var(--space-xs);
+  line-height: var(--line-height-loose);
+}
+
+/* ==========================================================================
+   Card (汎用カード)
+   ========================================================================== */
+
+.card {
+  background-color: var(--color-bg-card);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-l);
+  padding: var(--space-l);
+  box-shadow: var(--shadow-card);
+}
+
+/* ==========================================================================
+   Video Library (動画ライブラリ)
+   ========================================================================== */
+
+.video-grid {
+  display: grid;
+  gap: var(--space-m);
+}
+
+.video-card {
+  background-color: var(--color-bg-card);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-l);
+  padding: var(--space-l);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal);
+}
+
+.video-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.video-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-s);
+  margin-block-end: var(--space-s);
+}
+
+.video-card__tag {
+  flex: none;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-2xs) var(--space-xs);
+  border-radius: var(--radius-s);
+  white-space: nowrap;
+}
+
+.video-card__title {
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.video-card__meta {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-end: var(--space-s);
+  line-height: var(--line-height-loose);
+}
+
+.video-card__detail {
+  font-size: var(--font-size-s);
+  color: var(--color-text);
+  margin-block-end: var(--space-m);
+  line-height: var(--line-height-loose);
+}
+
+.video-card__detail-item {
+  display: flex;
+  gap: var(--space-xs);
+  margin-block-end: var(--space-2xs);
+}
+
+.video-card__detail-label {
+  flex: none;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  min-inline-size: 5rem;
+}
+
+.video-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.video-card__intensity {
+  display: flex;
+  gap: 0.125rem;
+  color: var(--color-primary);
+  font-size: var(--font-size-s);
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 48rem) {
+  .video-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ==========================================================================
+   Rotation (ローテーション説明)
+   ========================================================================== */
+
+.rotation__schedule {
+  display: grid;
+  gap: var(--space-m);
+  margin-block: var(--space-m);
+}
+
+.rotation__week {
+  background-color: var(--color-bg-alt);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-m);
+  padding: var(--space-m);
+}
+
+.rotation__week-title {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  margin-block-end: var(--space-xs);
+}
+
+.rotation__week-content {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+}
+
+.rotation__caution {
+  font-size: var(--font-size-s);
+  color: var(--color-warn);
+  margin-block-start: var(--space-m);
+  line-height: var(--line-height-loose);
+}
+
+@media (min-width: 48rem) {
+  .rotation__schedule {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ==========================================================================
+   Button
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  border: 0.0625rem solid transparent;
+  border-radius: var(--radius-m);
+  padding: var(--space-xs) var(--space-l);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.btn--primary:hover {
+  background-color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+.btn--secondary {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn--secondary:hover {
+  background-color: var(--color-primary-light);
+}
+
+.btn--danger {
+  background-color: var(--color-white);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn--danger:hover {
+  background-color: var(--color-danger-light);
+}
+
+.btn--small {
+  padding: var(--space-2xs) var(--space-s);
+  font-size: var(--font-size-s);
+}
+
+/* ==========================================================================
+   Form
+   ========================================================================== */
+
+.form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-m);
+}
+
+.form__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.form__label {
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-800);
+}
+
+.form__input,
+.form__select,
+.form__textarea {
+  inline-size: 100%;
+  padding: var(--space-xs) var(--space-s);
+  border: 0.0625rem solid var(--color-border-strong);
+  border-radius: var(--radius-m);
+  font-size: var(--font-size-m);
+  background-color: var(--color-white);
+  color: var(--color-text);
+}
+
+.form__input:hover,
+.form__select:hover,
+.form__textarea:hover {
+  border-color: var(--color-gray-900);
+}
+
+.form__textarea {
+  min-block-size: 4rem;
+}
+
+.form__checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s) var(--space-l);
+  align-items: center;
+}
+
+.form__checkbox-label {
+  font-weight: var(--font-weight-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-body);
+  cursor: pointer;
+}
+
+.form__checkbox {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  flex: none;
+  accent-color: var(--color-primary);
+}
+
+.form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  margin-block-start: var(--space-m);
+}
+
+.form__note {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-start: var(--space-2xs);
+}
+
+.form__warn {
+  font-size: var(--font-size-s);
+  color: var(--color-warn);
+  margin-block-start: var(--space-2xs);
+}
+
+@media (max-width: 35rem) {
+  .form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Stats (集計カード)
+   ========================================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-m);
+}
+
+.stat-card {
+  background-color: var(--color-bg-card);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-m);
+  padding: var(--space-m);
+}
+
+.stat-card__label {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-bold);
+}
+
+.stat-card__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-block-start: var(--space-2xs);
+}
+
+.stat-card__sub {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-start: var(--space-2xs);
+  line-height: var(--line-height-loose);
+}
+
+@media (min-width: 64rem) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 35rem) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Charts (グラフ)
+   ========================================================================== */
+
+.chart-section {
+  margin-block-start: var(--space-l);
+}
+
+.chart-block {
+  margin-block-start: var(--space-l);
+}
+
+.chart-block__title {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  margin-block-end: var(--space-xs);
+}
+
+.chart-block__canvas {
+  position: relative;
+  block-size: 14rem;
+}
+
+.chart-block__guide {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-start: var(--space-xs);
+  line-height: var(--line-height-loose);
+  background-color: var(--color-bg-alt);
+  border-radius: var(--radius-s);
+  padding: var(--space-xs) var(--space-s);
+}
+
+.chart-note {
+  display: none;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   Entry List (記録一覧)
+   ========================================================================== */
+
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.entry {
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-m);
+  padding: var(--space-m);
+  background-color: var(--color-bg-card);
+}
+
+.entry__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-s);
+  align-items: baseline;
+}
+
+.entry__date {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-body);
+}
+
+.badge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  background-color: var(--color-primary-lighter);
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  padding: 0.0625rem var(--space-xs);
+}
+
+.badge--off {
+  background-color: var(--color-gray-100);
+  color: var(--color-text-muted);
+}
+
+.entry__meta {
+  font-size: var(--font-size-s);
+  margin-block-start: var(--space-2xs);
+  color: var(--color-text-muted);
+}
+
+.entry__memo {
+  font-size: var(--font-size-s);
+  margin-block-start: var(--space-2xs);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.entry__actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-block-start: var(--space-xs);
+}
+
+.entry-list__empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+  padding-block: var(--space-s);
+}
+
+/* ==========================================================================
+   IO / Sync (データの入出力・同期)
+   ========================================================================== */
+
+.io-tabs {
+  display: flex;
+  gap: var(--space-xs);
+  margin-block-end: var(--space-m);
+}
+
+.io-tab {
+  flex: 1 1 0;
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border: 0.0625rem solid var(--color-primary);
+  border-radius: var(--radius-m);
+  padding: var(--space-xs) var(--space-s);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  text-align: center;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.io-tab.is-active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.io-panel[hidden] {
+  display: none;
+}
+
+.sync__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin-block-start: var(--space-s);
+}
+
+.sync__input {
+  inline-size: 100%;
+  padding: var(--space-xs) var(--space-s);
+  border: 0.0625rem solid var(--color-border-strong);
+  border-radius: var(--radius-m);
+  font-size: var(--font-size-body);
+  background-color: var(--color-white);
+  color: var(--color-text);
+}
+
+.sync__input:hover {
+  border-color: var(--color-gray-900);
+}
+
+.sync__status {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-size: var(--font-size-s);
+}
+
+/* ==========================================================================
+   Video Dialog (動画再生ダイアログ)
+   ========================================================================== */
+
+.video-dialog {
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-l);
+  padding: var(--space-l);
+  inline-size: min(55rem, 94vw);
+  max-inline-size: 100%;
+  margin: auto;
+}
+
+.video-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.video-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  margin-block-end: var(--space-s);
+}
+
+.video-dialog__title {
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-bold);
+}
+
+.video-dialog__frame {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-black);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.video-dialog__frame iframe {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+}
+
+.video-dialog__note {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-start: var(--space-s);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.footer {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-s);
+  padding-block: var(--space-l);
+  border-block-start: 0.0625rem solid var(--color-border);
+  margin-block-start: var(--space-xl);
+}

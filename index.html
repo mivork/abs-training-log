@@ -1,1053 +1,509 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>腹筋トレーニング記録</title>
-<meta name="theme-color" content="#0017c1">
-<meta name="description" content="7本の腹筋動画をローテーションして行うトレーニングの記録ツール。体重や睡眠も記録して変化の要因を切り分けます。">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<style>
-  :root {
-    /* デジタル庁デザインシステム（DADS）のカラートークンを参考 */
-    --blue-900: #0017c1;
-    --blue-1000: #00118f;
-    --blue-800: #0031d8;
-    --blue-100: #d9e6ff;
-    --blue-50: #e8f1fe;
-    --red-900: #ce0000;
-    --yellow-300: #ffd43d;
-    --gray-900: #1a1a1a;
-    --gray-800: #333333;
-    --gray-700: #4d4d4d;
-    --gray-600: #666666;
-    --gray-420: #949494;
-    --gray-300: #b3b3b3;
-    --gray-200: #cccccc;
-    --gray-100: #e6e6e6;
-    --gray-50: #f2f2f2;
-    --white: #ffffff;
-    --radius: 8px;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
-    background: var(--gray-50);
-    color: var(--gray-900);
-    line-height: 1.6;
-    letter-spacing: 0.02em;
-  }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 16px 14px 48px; }
-  header h1 { font-size: 1.45rem; margin: 0 0 4px; }
-  header p { margin: 0; color: var(--gray-700); font-size: 0.92rem; }
-  .card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-top: 16px;
-  }
-  .card h2 { font-size: 1.05rem; margin: 0 0 12px; font-weight: 700; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  label { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 4px; color: var(--gray-800); }
-  label.check { font-weight: 400; display: flex; align-items: center; gap: 8px; margin: 0; }
-  input[type="date"], input[type="number"], select, textarea {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--gray-600);
-    border-radius: var(--radius);
-    font-size: 1rem;
-    background: var(--white);
-    color: var(--gray-900);
-    font: inherit;
-  }
-  input:hover, select:hover, textarea:hover { border-color: var(--gray-900); }
-  :focus-visible {
-    outline: 4px solid var(--gray-900);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--yellow-300);
-  }
-  textarea { min-height: 64px; resize: vertical; }
-  input[type="checkbox"] { width: 20px; height: 20px; flex: none; accent-color: var(--blue-900); }
-  .checks { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
-  .note { font-size: 0.8rem; color: var(--gray-700); margin-top: 4px; }
-  .warn { font-size: 0.8rem; color: #927200; margin-top: 4px; }
-  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-  button {
-    border: 1px solid transparent;
-    border-radius: var(--radius);
-    padding: 10px 20px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    font-family: inherit;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    background: var(--blue-900);
-    color: var(--white);
-  }
-  button:hover { background: var(--blue-1000); text-decoration: underline; }
-  button.secondary { background: var(--white); color: var(--blue-900); border: 1px solid var(--blue-900); }
-  button.secondary:hover { background: var(--blue-100); }
-  button.danger { background: var(--white); color: var(--red-900); border: 1px solid var(--red-900); padding: 5px 12px; font-size: 0.85rem; }
-  button.danger:hover { background: #fdeeee; }
-  button.small { padding: 5px 12px; font-size: 0.85rem; }
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .stat { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 12px; background: var(--white); }
-  .stat .label { font-size: 0.82rem; color: var(--gray-700); font-weight: 700; }
-  .stat .value { font-size: 1.35rem; font-weight: 700; margin-top: 2px; }
-  .stat .sub { font-size: 0.82rem; color: var(--gray-700); }
-  .chart-box { margin-top: 8px; }
-  .chart-box h3 { font-size: 0.95rem; margin: 14px 0 6px; }
-  .chart-canvas { position: relative; height: 220px; }
-  .entry { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 12px; margin-top: 10px; }
-  .entry-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
-  .entry-date { font-weight: 700; }
-  .badge { font-size: 0.78rem; background: var(--blue-50); color: var(--blue-900); border-radius: 999px; padding: 1px 9px; font-weight: 700; }
-  .badge.off { background: var(--gray-100); color: var(--gray-700); }
-  .entry-meta { font-size: 0.88rem; margin-top: 4px; }
-  .entry-memo { font-size: 0.88rem; margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
-  .entry-actions { display: flex; gap: 8px; margin-top: 8px; }
-  .empty { color: var(--gray-700); font-size: 0.92rem; padding: 8px 0; }
-  footer { color: var(--gray-700); font-size: 0.8rem; margin-top: 20px; text-align: center; }
-
-
-
-
-  /* ===== 入出力／同期タブ切り替え ===== */
-  .io-tabs { display: flex; gap: 8px; margin: 2px 0 12px; }
-  .io-tab {
-    flex: 1 1 0; background: var(--white); color: var(--blue);
-    border: 1px solid var(--blue); border-radius: var(--radius);
-    padding: 8px 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
-  }
-  .io-tab.is-active { background: var(--blue); color: var(--white); }
-  .io-panel[hidden] { display: none; }
-  .sync-box.io-panel { margin-top: 0; border-top: none; padding-top: 0; }
-  /* ===== プライベート同期 ===== */
-  .sync-box { margin-top: 14px; border-top: 1px solid var(--gray-200); padding-top: 12px; }
-  .sync-box h3 { font-size: 0.95rem; margin: 0 0 8px; }
-  .sync-box label { margin-top: 8px; }
-  .sync-box input[type="text"], .sync-box input[type="password"] {
-    width: 100%; padding: 9px 12px; border: 1px solid var(--gray-600);
-    border-radius: var(--radius); font-size: 0.95rem; background: var(--white); color: var(--gray-900); font: inherit;
-  }
-  #syncStatus { font-weight: 700; color: var(--blue-900); }
-  /* ===== トレーニング動画リスト ===== */
-  .video-list { display: grid; gap: 8px; margin-bottom: 14px; }
-  .video-item {
-    display: flex; align-items: center; gap: 8px;
-    border: 1px solid var(--gray-200); border-radius: var(--radius);
-    padding: 8px 10px; background: var(--gray-50);
-  }
-  .video-main { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; color: var(--gray-900); text-decoration: none; }
-  .video-main:hover { text-decoration: underline; }
-  .video-tag {
-    flex: none; background: var(--blue-900); color: var(--white);
-    font-size: 0.75rem; font-weight: 700; border-radius: 4px; padding: 2px 8px;
-  }
-  .video-title { font-size: 0.88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .video-sub { font-size: 0.75rem; color: var(--gray-700); font-weight: 400; }
-  button.watch { flex: none; padding: 6px 12px; font-size: 0.82rem; }
-  /* ===== 動画再生ダイアログ ===== */
-  dialog#videoDialog { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px; width: min(880px, 94vw); }
-  dialog#videoDialog::backdrop { background: rgba(0, 0, 0, 0.6); }
-  .dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-  .dialog-head h3 { margin: 0; font-size: 1rem; }
-  .video-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 4px; overflow: hidden; }
-  .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  /* ===== デスクトップも通常スクロール（2026-11-07 マスター許可で変更） ===== */
-  @media (min-width: 1100px) {
-    .wrap { max-width: 960px; }
-    .stats-grid { grid-template-columns: repeat(4, 1fr); }
-    .video-list { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 560px) {
-    .grid, .stats-grid { grid-template-columns: 1fr; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>腹筋トレーニング記録</title>
+  <meta name="theme-color" content="#0017c1">
+  <meta name="description" content="7本の腹筋動画をローテーションして行うトレーニングの記録ツール。体重や睡眠も記録して変化の要因を切り分けます。">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>腹筋トレーニング記録</h1>
-    <p>7本の腹筋動画（動画A〜G）を毎回変えながらローテーションして行うトレーニングの記録ツールです。体重・睡眠も記録して、変化の要因を切り分けます。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
-  </header>
+  <div class="page">
 
-  <section class="card area-form">
-    <h2 id="formTitle">記録を追加</h2>
-    <div class="video-list" aria-label="トレーニング動画">
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=N3hjApR8o0E" target="_blank" rel="noopener">
-          <span class="video-tag">動画A</span>
-          <span class="video-title">1日で腹筋を割る鬼の筋トレ<span class="video-sub">（YouTubeで開く）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="N3hjApR8o0E" data-title="動画A：1日で腹筋を割る鬼の筋トレ">ここで再生</button>
+    <!-- ===== Header ===== -->
+    <header class="header">
+      <div class="header__inner">
+        <span class="header__title">腹筋トレーニング記録</span>
+        <nav class="header__nav" aria-label="ページ内ナビゲーション">
+          <ul class="header__nav-list">
+            <li><a class="header__nav-link" href="#videos">動画ライブラリ</a></li>
+            <li><a class="header__nav-link" href="#record">記録する</a></li>
+            <li><a class="header__nav-link" href="#charts">グラフと集計</a></li>
+            <li><a class="header__nav-link" href="#entries">記録一覧</a></li>
+            <li><a class="header__nav-link" href="#data">データと同期</a></li>
+          </ul>
+        </nav>
       </div>
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=7E-JAyzbj7o" target="_blank" rel="noopener">
-          <span class="video-tag">動画B</span>
-          <span class="video-title">4分で限界突破腹筋トレーニング<span class="video-sub">（YouTubeで開く）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="7E-JAyzbj7o" data-title="動画B：4分で限界突破腹筋トレーニング">ここで再生</button>
-      </div>
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=-fQj3ZEg6NA" target="_blank" rel="noopener">
-          <span class="video-tag">動画C</span>
-          <span class="video-title">下腹部をとことん鍛える4分間メニュー<span class="video-sub">（下腹集中・MELOS）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="-fQj3ZEg6NA" data-title="動画C：下腹部をとことん鍛える4分間メニュー">ここで再生</button>
-      </div>
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=F-BAo3qXT0U" target="_blank" rel="noopener">
-          <span class="video-tag">動画D</span>
-          <span class="video-title">脇腹を絞る腹斜筋サーキット3分<span class="video-sub">（脇腹集中・MELOS）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="F-BAo3qXT0U" data-title="動画D：脇腹を絞る腹斜筋サーキット3分">ここで再生</button>
-      </div>
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=BK1ZcLH0X4U" target="_blank" rel="noopener">
-          <span class="video-tag">動画E</span>
-          <span class="video-title">鬼の腹筋 1セットで効くトレーニング<span class="video-sub">（まめたま・強度高め）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="BK1ZcLH0X4U" data-title="動画E：鬼の腹筋 1セットで効くトレーニング">ここで再生</button>
-      </div>
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=RXlnM5K6vMc" target="_blank" rel="noopener">
-          <span class="video-tag">動画F</span>
-          <span class="video-title">最速でバキバキの腹筋を作る鬼の腹筋トレーニング<span class="video-sub">（まめたま・8分・強度高）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="RXlnM5K6vMc" data-title="動画F：最速でバキバキの腹筋を作る鬼の腹筋トレーニング（8分）">ここで再生</button>
-      </div>
-      <div class="video-item">
-        <a class="video-main" href="https://www.youtube.com/watch?v=lGZiUnmbeZc" target="_blank" rel="noopener">
-          <span class="video-tag">動画G</span>
-          <span class="video-title">4分で限界突破する鬼の腹筋トレーニング（悟り）<span class="video-sub">（まめたま・4分・最強レベル）</span></span>
-        </a>
-        <button type="button" class="secondary watch" data-embed="lGZiUnmbeZc" data-title="動画G：4分で限界突破する鬼の腹筋トレーニング（悟り）">ここで再生</button>
-      </div>
-    </div>
-    <p class="note">ローテーションの目安（毎回違う動画で、刺激を変える）: 週4回なら、1週目は「A → G → B → F（週末・8分）」、2週目は「C（下腹） → E → D（脇腹） → A」のように、同じ動画が続かない順番がおすすめです。強度の高いF・Gは週1〜2回までにして、間には回復日を挟んでください。腰に違和感が出る種目は無理せず止めてください。</p>
-    <form id="logForm">
-      <div class="grid">
-        <div>
-          <label for="date">日付</label>
-          <input type="date" id="date" required>
+    </header>
+
+    <main class="page__main">
+
+      <!-- ===== Hero ===== -->
+      <section class="hero">
+        <div class="hero__inner">
+          <h1 class="hero__heading">腹筋トレーニング記録</h1>
+          <p class="hero__description">7本の腹筋動画（動画A〜G）を毎回変えながらローテーションして行うトレーニングの記録サイトです。週4回、毎回違う動画を選ぶことで筋肉への刺激を変えていきます。体重・睡眠・外食・歩行も記録し、変化の要因を切り分けます。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
+          <div class="hero__stats">
+            <div class="hero-stat">
+              <div class="hero-stat__value" id="heroTotal">-</div>
+              <div class="hero-stat__label">総セッション数</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat__value" id="heroRecent">-</div>
+              <div class="hero-stat__label">直近28日</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat__value" id="heroWeight">-</div>
+              <div class="hero-stat__label">体重の変化</div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label for="sessionType">セッションの種類</label>
-          <select id="sessionType">
-            <option value="videoA">動画A（鬼の腹筋）</option>
-            <option value="videoB">動画B（4分腹筋）</option>
-            <option value="videoC">動画C（下腹集中4分）</option>
-            <option value="videoD">動画D（脇腹3分）</option>
-            <option value="videoE">動画E（鬼の腹筋・強度高め）</option>
-            <option value="videoF">動画F（鬼の腹筋・8分）</option>
-            <option value="videoG">動画G（限界突破・悟り4分）</option>
-            <option value="light">軽い体幹</option>
-            <option value="none">なし</option>
-          </select>
-        </div>
-        <div>
-          <label for="soreness">翌日の筋肉痛（0〜3）</label>
-          <select id="soreness">
-            <option value="0">0：なし</option>
-            <option value="1">1：軽い</option>
-            <option value="2">2：はっきりある</option>
-            <option value="3">3：強い</option>
-          </select>
-        </div>
-        <div>
-          <label for="backPain">腰の違和感（0〜3）</label>
-          <select id="backPain">
-            <option value="0">0：なし</option>
-            <option value="1">1：軽い</option>
-            <option value="2">2：はっきりある</option>
-            <option value="3">3：強い</option>
-          </select>
-        </div>
-        <div>
-          <label for="weight">体重（kg、任意）</label>
-          <input type="number" id="weight" step="0.01" min="0" max="300" placeholder="例：その日の測定値">
-        </div>
-        <div>
-          <label for="sleep">睡眠時間（時間、任意）</label>
-          <input type="number" id="sleep" step="0.1" min="0" max="24" placeholder="例：7.5">
-        </div>
-      </div>
+      </section>
 
-      <div style="margin-top:14px;">
-        <div class="checks">
-          <label class="check"><input type="checkbox" id="completed"> 実施した</label>
-          <label class="check"><input type="checkbox" id="eatingOut"> 外食した</label>
-          <label class="check"><input type="checkbox" id="longWalk"> 長く歩いた</label>
-        </div>
-      </div>
+      <div class="page__container">
 
-      <div style="margin-top:14px;">
-        <label for="memo">メモ（任意）</label>
-        <textarea id="memo" placeholder="体感、食事の内容、気づいたことなど"></textarea>
-        <p class="warn">注意：メモには個人情報（名前・住所・学校名・場所など）を書かないでください。スクリーンショットを共有すると見えてしまいます。</p>
-      </div>
+        <!-- ===== 動画ライブラリ ===== -->
+        <section class="section" id="videos">
+          <h2 class="section__heading">動画ライブラリ</h2>
+          <div class="video-grid">
 
-      <div class="actions">
-        <button type="submit" id="submitBtn">保存する</button>
-        <button type="button" class="secondary" id="cancelEditBtn" style="display:none;">編集をキャンセル</button>
-      </div>
-    </form>
-  </section>
+            <!-- 動画A -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画A</span>
+                <h3 class="video-card__title">1日で腹筋を割る鬼の筋トレ</h3>
+              </div>
+              <p class="video-card__meta">KEYSBIT</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>腹筋全体</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中4">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>全体を強く刺激する鬼メニュー。ローテーションの軸になる1本。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">こんな日に</span>
+                  <span>標準的なトレーニング日に。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=N3hjApR8o0E" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="N3hjApR8o0E" data-title="動画A: 1日で腹筋を割る鬼の筋トレ">ここで再生</button>
+              </div>
+            </article>
 
-  <section class="card area-stats">
-    <h2>切り分けメモ（集計）</h2>
-    <div class="stats-grid">
-      <div class="stat">
-        <div class="label">総セッション数</div>
-        <div class="value" id="statTotal">-</div>
-        <div class="sub">「実施した」セッションの累計</div>
-      </div>
-      <div class="stat">
-        <div class="label">直近28日のセッション数</div>
-        <div class="value" id="statRecent">-</div>
-        <div class="sub">今日を含む過去28日間</div>
-      </div>
-      <div class="stat">
-        <div class="label">体重の変化</div>
-        <div class="value" id="statWeightChange">-</div>
-        <div class="sub" id="statWeightChangeSub">最初の体重記録からの差</div>
-      </div>
-      <div class="stat">
-        <div class="label">週のセッション数と体重の平均</div>
-        <div class="value" id="statAvgCompare" style="font-size:1rem;">-</div>
-        <div class="sub">週4回以上の週と、それ未満の週で比べます</div>
-      </div>
-    </div>
-    <p class="note">セッション数が多い週に体重が下がっていればトレーニングの影響らしく、そうでなければ睡眠・外食・歩行など他の要因も疑えます。あくまで目安です。</p>
-  </section>
+            <!-- 動画B -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画B</span>
+                <h3 class="video-card__title">4分で限界突破腹筋トレーニング</h3>
+              </div>
+              <p class="video-card__meta">まめたま / 4分 / 8種目</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>上部・下部・脇腹を一通り</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中4">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>レッグレイズクランチ、ニートゥチェスト、ロシアンツイスト、L字キープ、ニータッチクランチ、ヒップレイズ、レッグアップ、バイシクルクランチの8種目。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">こんな日に</span>
+                  <span>バランスよく鍛えたい日に。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=7E-JAyzbj7o" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="7E-JAyzbj7o" data-title="動画B: 4分で限界突破腹筋トレーニング">ここで再生</button>
+              </div>
+            </article>
 
-  <section class="card area-charts">
-    <h2>グラフ</h2>
-    <p class="note" id="chartNote" style="display:none;">グラフ用ライブラリを読み込めませんでした（通信環境をご確認ください）。記録と集計はそのまま使えます。</p>
-    <div class="chart-box">
-      <h3>体重の推移（●が大きい日はトレーニング実施日）</h3>
-      <div class="chart-canvas"><canvas id="weightChart"></canvas></div>
-    </div>
-    <div class="chart-box">
-      <h3>週ごとのセッション数</h3>
-      <div class="chart-canvas"><canvas id="weeklyChart"></canvas></div>
-    </div>
-  </section>
+            <!-- 動画C -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画C</span>
+                <h3 class="video-card__title">下腹部をとことん鍛える4分間メニュー</h3>
+              </div>
+              <p class="video-card__meta">MELOS / 4分 / 8種目</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>下腹部集中</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中3">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>種目間に10秒休憩があり、フォームを意識しやすい構成。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">注意点</span>
+                  <span>レッグレイズ系は腰を反らさないように注意してください。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=-fQj3ZEg6NA" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="-fQj3ZEg6NA" data-title="動画C: 下腹部をとことん鍛える4分間メニュー">ここで再生</button>
+              </div>
+            </article>
 
-  <section class="card area-io">
-    <h2>データの入出力・同期</h2>
-    <div class="io-tabs" role="tablist" aria-label="入出力と同期の切り替え">
-      <button type="button" class="io-tab is-active" id="ioTabMain" role="tab" aria-selected="true" aria-controls="ioPanelMain">入出力</button>
-      <button type="button" class="io-tab" id="ioTabSync" role="tab" aria-selected="false" aria-controls="ioPanelSync">プライベート同期</button>
-    </div>
-    <div class="io-panel" id="ioPanelMain" role="tabpanel">
-    <p class="note">バックアップや端末の移行には、JSONで書き出して保存してください。読み込みは現在のデータを置き換えます。</p>
-    <div class="actions">
-      <button type="button" class="secondary" id="exportBtn">JSONを書き出す</button>
-      <button type="button" class="secondary" id="importBtn">JSONを読み込む</button>
-      <button type="button" class="secondary" id="shareBtn">このサイトを共有</button>
-      <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
-    </div>
-    </div>
-    <div class="sync-box io-panel" id="ioPanelSync" role="tabpanel" hidden>
-      <h3>プライベート同期（GitHub・非公開リポジトリ）</h3>
-      <label for="syncRepo">同期先リポジトリ（owner/repo）</label>
-      <input type="text" id="syncRepo" autocomplete="off" spellcheck="false">
-      <label for="syncToken">アクセストークン</label>
-      <input type="password" id="syncToken" autocomplete="off" placeholder="github_pat_...">
-      <div class="actions">
-        <button type="button" class="secondary" id="syncSaveBtn">設定を保存して同期</button>
-        <button type="button" class="secondary" id="syncPullBtn">クラウドから読み込む</button>
+            <!-- 動画D -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画D</span>
+                <h3 class="video-card__title">脇腹を絞る腹斜筋サーキットトレーニング</h3>
+              </div>
+              <p class="video-card__meta">MELOS / 3分 / 5種目</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>脇腹（腹斜筋）集中</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中3">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>ツイストクランチ、ツイストレッグレイズ、ロシアンツイスト、ヒールタッチ、バイシクルの5種目。全動画中で最短。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">こんな日に</span>
+                  <span>脇腹を集中して鍛えたい日に。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=F-BAo3qXT0U" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="F-BAo3qXT0U" data-title="動画D: 脇腹を絞る腹斜筋サーキットトレーニング">ここで再生</button>
+              </div>
+            </article>
+
+            <!-- 動画E -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画E</span>
+                <h3 class="video-card__title">鬼の腹筋 1セットだけでヤバいほど効く腹筋トレーニング</h3>
+              </div>
+              <p class="video-card__meta">まめたま</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>腹筋全体</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中4">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>1セット集中型。短時間で追い込むメニュー。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">こんな日に</span>
+                  <span>調子のいい日に。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=BK1ZcLH0X4U" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="BK1ZcLH0X4U" data-title="動画E: 鬼の腹筋 1セットだけでヤバいほど効く腹筋トレーニング">ここで再生</button>
+              </div>
+            </article>
+
+            <!-- 動画F -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画F</span>
+                <h3 class="video-card__title">最速でバキバキの腹筋を作る鬼の腹筋トレーニング</h3>
+              </div>
+              <p class="video-card__meta">まめたま / 8分 / 8種目</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>腹筋全体（高強度）</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中5">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>ハイサイドヒールタッチ、ストレートレッグクランチ、レッグレイズタッチクランチ、リバースクランチサークル、フラッターキック、バイシクルクランチ等の8種目。全動画中で最長。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">注意点</span>
+                  <span>週末用。週1回が目安です。腰に違和感が出たら中止してください。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=RXlnM5K6vMc" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="RXlnM5K6vMc" data-title="動画F: 最速でバキバキの腹筋を作る鬼の腹筋トレーニング（8分）">ここで再生</button>
+              </div>
+            </article>
+
+            <!-- 動画G -->
+            <article class="video-card">
+              <div class="video-card__header">
+                <span class="video-card__tag">動画G</span>
+                <h3 class="video-card__title">4分で限界突破する鬼の腹筋トレーニング（悟り）</h3>
+              </div>
+              <p class="video-card__meta">まめたま / 4分</p>
+              <div class="video-card__detail">
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">対象部位</span>
+                  <span>腹筋全体（最高強度）</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">強度</span>
+                  <span class="video-card__intensity" aria-label="5段階中5">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">特徴</span>
+                  <span>最強レベルと銘打たれた限界突破メニュー。短時間で極限まで追い込む。</span>
+                </div>
+                <div class="video-card__detail-item">
+                  <span class="video-card__detail-label">注意点</span>
+                  <span>週1〜2回まで。無理のない範囲で行ってください。</span>
+                </div>
+              </div>
+              <div class="video-card__actions">
+                <a class="btn btn--secondary btn--small" href="https://www.youtube.com/watch?v=lGZiUnmbeZc" target="_blank" rel="noopener">YouTubeで開く</a>
+                <button type="button" class="btn btn--primary btn--small" data-embed="lGZiUnmbeZc" data-title="動画G: 4分で限界突破する鬼の腹筋トレーニング（悟り）">ここで再生</button>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- ===== ローテーションの説明 ===== -->
+        <section class="section" id="rotation">
+          <h2 class="section__heading">ローテーションの仕組み</h2>
+          <p>毎回違う動画を選んで、筋肉への刺激を変えながらトレーニングします。同じ動画が連続しないように順番を組み、強度の高い動画（F・G）は週1〜2回に抑えて回復日を設けます。</p>
+          <div class="rotation__schedule">
+            <div class="rotation__week">
+              <p class="rotation__week-title">1週目の例（週4回）</p>
+              <p class="rotation__week-content">A（全体・鬼） → G（限界突破） → B（4分・バランス） → F（8分・週末）</p>
+            </div>
+            <div class="rotation__week">
+              <p class="rotation__week-title">2週目の例（週4回）</p>
+              <p class="rotation__week-content">C（下腹集中） → E（1セット集中） → D（脇腹） → A（全体・鬼）</p>
+            </div>
+          </div>
+          <p class="rotation__caution">強度の高い動画F・Gは週1〜2回までにして、間には回復日を挟んでください。腰に違和感が出る種目は無理せず止めてください。</p>
+        </section>
+
+        <!-- ===== 記録フォーム ===== -->
+        <section class="section" id="record">
+          <h2 class="section__heading" id="formTitle">記録する</h2>
+          <div class="card">
+            <form id="logForm">
+              <div class="form__grid">
+                <div class="form__group">
+                  <label class="form__label" for="date">日付</label>
+                  <input class="form__input" type="date" id="date" required>
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="sessionType">セッションの種類</label>
+                  <select class="form__select" id="sessionType">
+                    <option value="videoA">動画A（鬼の腹筋）</option>
+                    <option value="videoB">動画B（4分腹筋）</option>
+                    <option value="videoC">動画C（下腹集中4分）</option>
+                    <option value="videoD">動画D（脇腹3分）</option>
+                    <option value="videoE">動画E（鬼の腹筋・強度高め）</option>
+                    <option value="videoF">動画F（鬼の腹筋・8分）</option>
+                    <option value="videoG">動画G（限界突破・悟り4分）</option>
+                    <option value="light">軽い体幹</option>
+                    <option value="none">なし</option>
+                  </select>
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="soreness">翌日の筋肉痛（0〜3）</label>
+                  <select class="form__select" id="soreness">
+                    <option value="0">0: なし</option>
+                    <option value="1">1: 軽い</option>
+                    <option value="2">2: はっきりある</option>
+                    <option value="3">3: 強い</option>
+                  </select>
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="backPain">腰の違和感（0〜3）</label>
+                  <select class="form__select" id="backPain">
+                    <option value="0">0: なし</option>
+                    <option value="1">1: 軽い</option>
+                    <option value="2">2: はっきりある</option>
+                    <option value="3">3: 強い</option>
+                  </select>
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="weight">体重（kg、任意）</label>
+                  <input class="form__input" type="number" id="weight" step="0.01" min="0" max="300" placeholder="例: その日の測定値">
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="sleep">睡眠時間（時間、任意）</label>
+                  <input class="form__input" type="number" id="sleep" step="0.1" min="0" max="24" placeholder="例: 7.5">
+                </div>
+              </div>
+
+              <div class="form__checkbox-group u-margin-block-start-m">
+                <label class="form__checkbox-label">
+                  <input class="form__checkbox" type="checkbox" id="completed"> 実施した
+                </label>
+                <label class="form__checkbox-label">
+                  <input class="form__checkbox" type="checkbox" id="eatingOut"> 外食した
+                </label>
+                <label class="form__checkbox-label">
+                  <input class="form__checkbox" type="checkbox" id="longWalk"> 長く歩いた
+                </label>
+              </div>
+
+              <div class="form__group u-margin-block-start-m">
+                <label class="form__label" for="memo">メモ（任意）</label>
+                <textarea class="form__textarea" id="memo" placeholder="体感、食事の内容、気づいたことなど"></textarea>
+                <p class="form__warn">注意: メモには個人情報（名前・住所・学校名・場所など）を書かないでください。スクリーンショットを共有すると見えてしまいます。</p>
+              </div>
+
+              <div class="form__actions">
+                <button type="submit" class="btn btn--primary" id="submitBtn">保存する</button>
+                <button type="button" class="btn btn--secondary" id="cancelEditBtn" hidden>編集をキャンセル</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ===== グラフと集計 ===== -->
+        <section class="section" id="charts">
+          <h2 class="section__heading">グラフと集計</h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card__label">総セッション数</div>
+              <div class="stat-card__value" id="statTotal">-</div>
+              <div class="stat-card__sub">「実施した」にチェックが入ったセッションの累計です。</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__label">直近28日のセッション数</div>
+              <div class="stat-card__value" id="statRecent">-</div>
+              <div class="stat-card__sub">今日を含む過去28日間に実施したセッションの数です。</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__label">体重の変化</div>
+              <div class="stat-card__value" id="statWeightChange">-</div>
+              <div class="stat-card__sub" id="statWeightChangeSub">最初の体重記録から最新の体重記録までの差です。</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__label">週のセッション数と体重の平均</div>
+              <div class="stat-card__value" id="statAvgCompare">-</div>
+              <div class="stat-card__sub">週4回以上の週と、それ未満の週の平均体重を比べます。セッション数が多い週に体重が低ければトレーニングの影響が示唆され、差がなければ他の要因（睡眠・外食・歩行など）も検討できます。あくまで目安です。</div>
+            </div>
+          </div>
+
+          <div class="chart-section">
+            <p class="chart-note" id="chartNote">グラフ用ライブラリを読み込めませんでした（通信環境をご確認ください）。記録と集計はそのまま使えます。</p>
+
+            <!-- 体重推移グラフ -->
+            <div class="chart-block">
+              <h3 class="chart-block__title">体重の推移</h3>
+              <div class="chart-block__canvas"><canvas id="weightChart"></canvas></div>
+              <div class="chart-block__guide">
+                <p>このグラフの見方: 横軸は日付、縦軸は体重（kg）です。大きい丸（赤）はトレーニングを実施した日、小さい丸（青）は未実施の日を示します。実施日と体重の関係を見ることで、トレーニング習慣と体重変化のつながりを確認できます。</p>
+              </div>
+            </div>
+
+            <!-- 週ごとのセッション数グラフ -->
+            <div class="chart-block">
+              <h3 class="chart-block__title">週ごとのセッション数</h3>
+              <div class="chart-block__canvas"><canvas id="weeklyChart"></canvas></div>
+              <div class="chart-block__guide">
+                <p>このグラフの見方: 横軸は週の開始日（月曜日）、縦軸はその週に実施したセッション数です。赤い点線は目標の週4回を示しています。線を超えている週は目標達成、下回っている週は未達成です。</p>
+              </div>
+            </div>
+
+            <!-- 動画別の実施回数グラフ -->
+            <div class="chart-block">
+              <h3 class="chart-block__title">動画別の実施回数</h3>
+              <div class="chart-block__canvas"><canvas id="videoCountChart"></canvas></div>
+              <div class="chart-block__guide">
+                <p>このグラフの見方: 動画A〜Gそれぞれの実施回数を棒グラフで表示しています。偏りが大きい場合は、実施回数の少ない動画をローテーションに意識的に組み込むとバランスが良くなります。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== 記録一覧 ===== -->
+        <section class="section" id="entries">
+          <h2 class="section__heading">記録一覧</h2>
+          <div id="entryList" class="entry-list"></div>
+        </section>
+
+        <!-- ===== データと同期 ===== -->
+        <section class="section" id="data">
+          <h2 class="section__heading">データと同期</h2>
+          <div class="card">
+            <div class="io-tabs" role="tablist" aria-label="入出力と同期の切り替え">
+              <button type="button" class="io-tab is-active" id="ioTabMain" role="tab" aria-selected="true" aria-controls="ioPanelMain">入出力</button>
+              <button type="button" class="io-tab" id="ioTabSync" role="tab" aria-selected="false" aria-controls="ioPanelSync">プライベート同期</button>
+            </div>
+
+            <div class="io-panel" id="ioPanelMain" role="tabpanel">
+              <p class="section__note">バックアップや端末の移行には、JSONで書き出して保存してください。読み込みは現在のデータを置き換えます。</p>
+              <div class="form__actions">
+                <button type="button" class="btn btn--secondary" id="exportBtn">JSONを書き出す</button>
+                <button type="button" class="btn btn--secondary" id="importBtn">JSONを読み込む</button>
+                <button type="button" class="btn btn--secondary" id="shareBtn">このサイトを共有</button>
+                <input type="file" id="importFile" accept="application/json,.json" hidden>
+              </div>
+            </div>
+
+            <div class="io-panel" id="ioPanelSync" role="tabpanel" hidden>
+              <h3 class="chart-block__title">プライベート同期（GitHub・非公開リポジトリ）</h3>
+              <div class="sync__form-group">
+                <label class="form__label" for="syncRepo">同期先リポジトリ（owner/repo）</label>
+                <input class="sync__input" type="text" id="syncRepo" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="sync__form-group">
+                <label class="form__label" for="syncToken">アクセストークン</label>
+                <input class="sync__input" type="password" id="syncToken" autocomplete="off" placeholder="github_pat_...">
+              </div>
+              <div class="form__actions">
+                <button type="button" class="btn btn--secondary" id="syncSaveBtn">設定を保存して同期</button>
+                <button type="button" class="btn btn--secondary" id="syncPullBtn">クラウドから読み込む</button>
+              </div>
+              <p class="section__note sync__status" id="syncStatus">未設定</p>
+              <p class="section__note">トークンはこのブラウザの中だけに保存され、公開されているコードには含まれません。記録を保存・編集・削除すると、非公開リポジトリの data.json へ自動で送信されます。</p>
+            </div>
+          </div>
+        </section>
+
       </div>
-      <p class="note" id="syncStatus">未設定</p>
-      <p class="note">トークンはこのブラウザの中だけに保存され、公開されているコードには含まれません。記録を保存・編集・削除すると、非公開リポジトリの data.json へ自動で送信されます。</p>
-    </div>
-  </section>
+    </main>
 
-  <section class="card area-entries">
-    <h2>記録一覧</h2>
-    <div id="entryList"></div>
-  </section>
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+      <p>データはこの端末のブラウザにのみ保存されます。ブラウザのデータを消すと記録も消えるため、定期的な書き出しをおすすめします。</p>
+    </footer>
 
-  <footer>データはこの端末のブラウザにのみ保存されます。ブラウザのデータを消すと記録も消えるため、定期的な書き出しをおすすめします。</footer>
-</div>
-
-<dialog id="videoDialog" aria-labelledby="videoDialogTitle">
-  <div class="dialog-head">
-    <h3 id="videoDialogTitle">動画を再生</h3>
-    <button type="button" class="secondary small" id="videoCloseBtn">閉じる</button>
   </div>
-  <div class="video-frame"><iframe id="videoFrame" title="トレーニング動画" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
-  <p class="note">再生を止めるときは「閉じる」を押してください。通信量が気になる場合はYouTubeアプリ／サイトで開くリンクをご利用ください。</p>
-</dialog>
 
-<script>
-(function () {
-  'use strict';
+  <!-- ===== 動画再生ダイアログ ===== -->
+  <dialog class="video-dialog" id="videoDialog" aria-labelledby="videoDialogTitle">
+    <div class="video-dialog__header">
+      <h3 class="video-dialog__title" id="videoDialogTitle">動画を再生</h3>
+      <button type="button" class="btn btn--secondary btn--small" id="videoCloseBtn">閉じる</button>
+    </div>
+    <div class="video-dialog__frame">
+      <iframe id="videoFrame" title="トレーニング動画" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <p class="video-dialog__note">再生を止めるときは「閉じる」を押してください。通信量が気になる場合はYouTubeアプリ／サイトで開くリンクをご利用ください。</p>
+  </dialog>
 
-  var STORAGE_KEY = 'absTrainingLogEntriesV1';
-  var TYPE_LABELS = {
-    videoA: '動画A（鬼の腹筋）',
-    videoB: '動画B（4分腹筋）',
-    videoC: '動画C（下腹集中4分）',
-    videoD: '動画D（脇腹3分）',
-    videoE: '動画E（鬼の腹筋・強度高め）',
-    videoF: '動画F（鬼の腹筋・8分）',
-    videoG: '動画G（限界突破・悟り4分）',
-    light: '軽い体幹',
-    none: 'なし'
-  };
-
-  var entries = loadEntries();
-  var editingId = null;
-  var weightChart = null;
-  var weeklyChart = null;
-
-  var form = document.getElementById('logForm');
-  var dateInput = document.getElementById('date');
-  var typeInput = document.getElementById('sessionType');
-  var sorenessInput = document.getElementById('soreness');
-  var backInput = document.getElementById('backPain');
-  var weightInput = document.getElementById('weight');
-  var sleepInput = document.getElementById('sleep');
-  var completedInput = document.getElementById('completed');
-  var eatingOutInput = document.getElementById('eatingOut');
-  var longWalkInput = document.getElementById('longWalk');
-  var memoInput = document.getElementById('memo');
-  var submitBtn = document.getElementById('submitBtn');
-  var cancelEditBtn = document.getElementById('cancelEditBtn');
-  var formTitle = document.getElementById('formTitle');
-  var listEl = document.getElementById('entryList');
-
-  dateInput.value = todayString();
-
-  form.addEventListener('submit', onSubmit);
-  cancelEditBtn.addEventListener('click', resetForm);
-  document.getElementById('exportBtn').addEventListener('click', exportJson);
-  var importFile = document.getElementById('importFile');
-  document.getElementById('importBtn').addEventListener('click', function () { importFile.click(); });
-  importFile.addEventListener('change', importJson);
-
-
-  // 動画の埋め込み再生（dialog + youtube-nocookie）
-  var videoDialog = document.getElementById('videoDialog');
-  var videoFrame = document.getElementById('videoFrame');
-  var videoDialogTitle = document.getElementById('videoDialogTitle');
-  document.querySelectorAll('button.watch').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      videoDialogTitle.textContent = btn.getAttribute('data-title');
-      videoFrame.src = 'https://www.youtube-nocookie.com/embed/' + btn.getAttribute('data-embed') + '?autoplay=1&rel=0';
-      if (typeof videoDialog.showModal === 'function') videoDialog.showModal();
-    });
-  });
-  function closeVideo() {
-    videoFrame.src = '';
-    if (videoDialog.open) videoDialog.close();
-  }
-  document.getElementById('videoCloseBtn').addEventListener('click', closeVideo);
-  videoDialog.addEventListener('click', function (ev) { if (ev.target === videoDialog) closeVideo(); });
-  videoDialog.addEventListener('close', function () { videoFrame.src = ''; });
-
-  // このサイトを共有（Web Share API、なければURLをコピー）
-  document.getElementById('shareBtn').addEventListener('click', function () {
-    var shareData = { title: document.title, text: '腹筋トレーニング記録', url: location.href };
-    if (navigator.share) {
-      navigator.share(shareData).catch(function () {});
-    } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(location.href).then(function () { alert('URLをコピーしました。'); });
-    } else {
-      alert('このブラウザでは共有機能が使えません。URLをコピーして共有してください。');
-    }
-  });
-
-  // Ctrl+Enter / Cmd+Enter でフォームを送信
-  form.addEventListener('keydown', function (ev) {
-    if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
-      ev.preventDefault();
-      if (typeof form.requestSubmit === 'function') form.requestSubmit();
-    }
-  });
-
-
-
-  // ===== 入出力／同期タブ切り替え =====
-  var ioTabMain = document.getElementById('ioTabMain');
-  var ioTabSync = document.getElementById('ioTabSync');
-  var ioPanelMain = document.getElementById('ioPanelMain');
-  var ioPanelSync = document.getElementById('ioPanelSync');
-  function selectIoTab(which) {
-    var main = which === 'main';
-    ioPanelMain.hidden = !main;
-    ioPanelSync.hidden = main;
-    ioTabMain.classList.toggle('is-active', main);
-    ioTabSync.classList.toggle('is-active', !main);
-    ioTabMain.setAttribute('aria-selected', main ? 'true' : 'false');
-    ioTabSync.setAttribute('aria-selected', main ? 'false' : 'true');
-  }
-  ioTabMain.addEventListener('click', function () { selectIoTab('main'); });
-  ioTabSync.addEventListener('click', function () { selectIoTab('sync'); });
-
-  // ===== プライベート同期（GitHub Contents API） =====
-  var SYNC_TOKEN_KEY = 'absTrainingLogSyncTokenV1';
-  var SYNC_REPO_KEY = 'absTrainingLogSyncRepoV1';
-  var SYNC_DEFAULT_REPO = 'mivork/abs-training-data';
-  var syncRepoInput = document.getElementById('syncRepo');
-  var syncTokenInput = document.getElementById('syncToken');
-  var syncStatusEl = document.getElementById('syncStatus');
-  syncRepoInput.value = localStorage.getItem(SYNC_REPO_KEY) || SYNC_DEFAULT_REPO;
-  syncTokenInput.value = localStorage.getItem(SYNC_TOKEN_KEY) || '';
-
-  function syncConfig() {
-    return {
-      repo: (syncRepoInput.value || '').trim() || SYNC_DEFAULT_REPO,
-      token: (localStorage.getItem(SYNC_TOKEN_KEY) || '').trim()
-    };
-  }
-  function setSyncStatus(msg) { syncStatusEl.textContent = msg; }
-  function refreshSyncStatus() {
-    if (syncConfig().token) setSyncStatus('設定済み：記録の変更は自動で同期されます');
-    else setSyncStatus('未設定：トークンを入れると自動同期します');
-  }
-  function utf8ToBase64(str) {
-    return btoa(String.fromCharCode.apply(null, new TextEncoder().encode(str)));
-  }
-  function base64ToUtf8(b64) {
-    var bin = atob(String(b64).replace(/\s/g, ''));
-    var bytes = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
-  }
-  function ghHeaders(token) {
-    return {
-      'Authorization': 'Bearer ' + token,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    };
-  }
-  function ghDataUrl(repo) {
-    return 'https://api.github.com/repos/' + repo + '/contents/data.json';
-  }
-  function pushToGitHub(isRetry) {
-    var cfg = syncConfig();
-    if (!cfg.token) { refreshSyncStatus(); return Promise.resolve(false); }
-    setSyncStatus('同期中...');
-    return fetch(ghDataUrl(cfg.repo), { headers: ghHeaders(cfg.token) })
-      .then(function (res) {
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error('GET ' + res.status);
-        return res.json();
-      })
-      .then(function (fileInfo) {
-        var payload = JSON.stringify(sortedEntries(false), null, 2);
-        var body = {
-          message: 'Update training log data',
-          content: utf8ToBase64(payload)
-        };
-        if (fileInfo && fileInfo.sha) body.sha = fileInfo.sha;
-        return fetch(ghDataUrl(cfg.repo), {
-          method: 'PUT',
-          headers: ghHeaders(cfg.token),
-          body: JSON.stringify(body)
-        });
-      })
-      .then(function (res) {
-        if (res.status === 409 && !isRetry) return pushToGitHub(true);
-        if (!res.ok) throw new Error('PUT ' + res.status);
-        var now = new Date();
-        setSyncStatus('同期済み（' + pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + '）');
-        return true;
-      })
-      .catch(function (err) {
-        setSyncStatus('同期に失敗しました（' + err.message + '）。トークンとリポジトリをご確認ください');
-        return false;
-      });
-  }
-  function trySyncPush() {
-    if (syncConfig().token) pushToGitHub(false);
-  }
-  function pullFromGitHub() {
-    var cfg = syncConfig();
-    if (!cfg.token) { setSyncStatus('未設定：先にトークンを保存してください'); return; }
-    setSyncStatus('クラウドから読み込み中...');
-    fetch(ghDataUrl(cfg.repo), { headers: ghHeaders(cfg.token) })
-      .then(function (res) {
-        if (res.status === 404) { setSyncStatus('クラウドに data.json がまだありません'); return null; }
-        if (!res.ok) throw new Error('GET ' + res.status);
-        return res.json();
-      })
-      .then(function (fileInfo) {
-        if (!fileInfo) return;
-        var parsed = JSON.parse(base64ToUtf8(fileInfo.content));
-        if (!Array.isArray(parsed)) throw new Error('not an array');
-        var cleaned = parsed.map(normalizeEntry).filter(function (e) { return e !== null; });
-        if (!window.confirm('クラウドの記録 ' + cleaned.length + ' 件を読み込み、この端末のデータを置き換えますか？')) {
-          refreshSyncStatus();
-          return;
-        }
-        entries = cleaned;
-        saveEntries();
-        resetForm();
-        renderAll();
-        setSyncStatus('クラウドから読み込みました（' + cleaned.length + ' 件）');
-      })
-      .catch(function (err) {
-        setSyncStatus('読み込みに失敗しました（' + err.message + '）');
-      });
-  }
-  document.getElementById('syncSaveBtn').addEventListener('click', function () {
-    localStorage.setItem(SYNC_REPO_KEY, (syncRepoInput.value || '').trim() || SYNC_DEFAULT_REPO);
-    localStorage.setItem(SYNC_TOKEN_KEY, (syncTokenInput.value || '').trim());
-    if (syncConfig().token) pushToGitHub(false);
-    else refreshSyncStatus();
-  });
-  document.getElementById('syncPullBtn').addEventListener('click', pullFromGitHub);
-  refreshSyncStatus();
-  // 端末に記録がなく、同期設定がある場合はクラウドから自動で取り込む
-  if (syncConfig().token && entries.length === 0) {
-    var autoCfg = syncConfig();
-    fetch(ghDataUrl(autoCfg.repo), { headers: ghHeaders(autoCfg.token) })
-      .then(function (res) { return res.ok ? res.json() : null; })
-      .then(function (fileInfo) {
-        if (!fileInfo) return;
-        var parsed = JSON.parse(base64ToUtf8(fileInfo.content));
-        if (!Array.isArray(parsed) || parsed.length === 0) return;
-        entries = parsed.map(normalizeEntry).filter(function (e) { return e !== null; });
-        saveEntries();
-        renderAll();
-        setSyncStatus('クラウドの記録を自動で取り込みました');
-      })
-      .catch(function () {});
-  }
-
-  // PWA: Service Worker（http/https のときだけ登録）
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function () {});
-    });
-  }
-
-  renderAll();
-
-  function loadEntries() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      var parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed.map(normalizeEntry).filter(function (e) { return e !== null; });
-    } catch (err) {
-      return [];
-    }
-  }
-
-  function saveEntries() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  }
-
-  function normalizeEntry(item) {
-    if (!item || typeof item !== 'object') return null;
-    if (typeof item.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) return null;
-    var type = TYPE_LABELS.hasOwnProperty(item.sessionType) ? item.sessionType : 'none';
-    return {
-      id: typeof item.id === 'string' && item.id ? item.id : makeId(),
-      date: item.date,
-      sessionType: type,
-      completed: !!item.completed,
-      soreness: clampScale(item.soreness),
-      backPain: clampScale(item.backPain),
-      weight: toNumberOrNull(item.weight),
-      sleep: toNumberOrNull(item.sleep),
-      eatingOut: !!item.eatingOut,
-      longWalk: !!item.longWalk,
-      memo: typeof item.memo === 'string' ? item.memo : ''
-    };
-  }
-
-  function clampScale(v) {
-    var n = parseInt(v, 10);
-    if (isNaN(n) || n < 0) return 0;
-    if (n > 3) return 3;
-    return n;
-  }
-
-  function toNumberOrNull(v) {
-    if (v === null || v === undefined || v === '') return null;
-    var n = Number(v);
-    return isNaN(n) ? null : n;
-  }
-
-  function makeId() {
-    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000000000).toString(36);
-  }
-
-  function pad2(n) { return (n < 10 ? '0' : '') + n; }
-
-  function formatDateObj(d) {
-    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-  }
-
-  function todayString() {
-    return formatDateObj(new Date());
-  }
-
-  function parseDate(dateStr) {
-    return new Date(dateStr + 'T00:00:00');
-  }
-
-  function weekStartString(dateStr) {
-    var d = parseDate(dateStr);
-    var diff = (d.getDay() + 6) % 7;
-    d.setDate(d.getDate() - diff);
-    return formatDateObj(d);
-  }
-
-  function isSession(entry) {
-    return !!entry.completed && entry.sessionType !== 'none';
-  }
-
-  function onSubmit(ev) {
-    ev.preventDefault();
-    var data = {
-      date: dateInput.value,
-      sessionType: typeInput.value,
-      completed: completedInput.checked,
-      soreness: clampScale(sorenessInput.value),
-      backPain: clampScale(backInput.value),
-      weight: toNumberOrNull(weightInput.value),
-      sleep: toNumberOrNull(sleepInput.value),
-      eatingOut: eatingOutInput.checked,
-      longWalk: longWalkInput.checked,
-      memo: memoInput.value.trim()
-    };
-    if (!data.date) {
-      alert('日付を入力してください。');
-      return;
-    }
-    if (editingId) {
-      for (var i = 0; i < entries.length; i++) {
-        if (entries[i].id === editingId) {
-          data.id = editingId;
-          entries[i] = data;
-          break;
-        }
-      }
-    } else {
-      var dupIndex = -1;
-      for (var j = 0; j < entries.length; j++) {
-        if (entries[j].date === data.date) { dupIndex = j; break; }
-      }
-      if (dupIndex >= 0) {
-        if (!window.confirm('同じ日付の記録がすでにあります。置き換えますか？')) return;
-        data.id = entries[dupIndex].id;
-        entries[dupIndex] = data;
-      } else {
-        data.id = makeId();
-        entries.push(data);
-      }
-    }
-    saveEntries();
-    resetForm();
-    renderAll();
-    trySyncPush();
-  }
-
-  function resetForm() {
-    editingId = null;
-    form.reset();
-    dateInput.value = todayString();
-    submitBtn.textContent = '保存する';
-    formTitle.textContent = '記録を追加';
-    cancelEditBtn.style.display = 'none';
-  }
-
-  function startEdit(id) {
-    var entry = findById(id);
-    if (!entry) return;
-    editingId = id;
-    dateInput.value = entry.date;
-    typeInput.value = entry.sessionType;
-    sorenessInput.value = String(entry.soreness);
-    backInput.value = String(entry.backPain);
-    weightInput.value = entry.weight === null ? '' : String(entry.weight);
-    sleepInput.value = entry.sleep === null ? '' : String(entry.sleep);
-    completedInput.checked = !!entry.completed;
-    eatingOutInput.checked = !!entry.eatingOut;
-    longWalkInput.checked = !!entry.longWalk;
-    memoInput.value = entry.memo || '';
-    submitBtn.textContent = '更新する';
-    formTitle.textContent = '記録を編集';
-    cancelEditBtn.style.display = '';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function deleteEntry(id) {
-    var entry = findById(id);
-    if (!entry) return;
-    if (!window.confirm(entry.date + ' の記録を削除しますか？')) return;
-    entries = entries.filter(function (e) { return e.id !== id; });
-    if (editingId === id) resetForm();
-    saveEntries();
-    renderAll();
-    trySyncPush();
-  }
-
-  function findById(id) {
-    for (var i = 0; i < entries.length; i++) {
-      if (entries[i].id === id) return entries[i];
-    }
-    return null;
-  }
-
-  function sortedEntries(desc) {
-    var copy = entries.slice();
-    copy.sort(function (a, b) {
-      if (a.date < b.date) return desc ? 1 : -1;
-      if (a.date > b.date) return desc ? -1 : 1;
-      return 0;
-    });
-    return copy;
-  }
-
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function renderAll() {
-    renderList();
-    renderStats();
-    renderCharts();
-  }
-
-  function renderList() {
-    var sorted = sortedEntries(true);
-    if (sorted.length === 0) {
-      listEl.innerHTML = '<p class="empty">まだ記録がありません。上のフォームから最初の記録を追加してください。</p>';
-      return;
-    }
-    var htmlParts = [];
-    sorted.forEach(function (entry) {
-      var session = isSession(entry);
-      var meta = [];
-      meta.push('筋肉痛（翌日）: ' + entry.soreness);
-      meta.push('腰の違和感: ' + entry.backPain);
-      if (entry.weight !== null) meta.push('体重: ' + entry.weight + ' kg');
-      if (entry.sleep !== null) meta.push('睡眠: ' + entry.sleep + ' 時間');
-      if (entry.eatingOut) meta.push('外食あり');
-      if (entry.longWalk) meta.push('長く歩いた');
-      var html = '';
-      html += '<div class="entry">';
-      html += '<div class="entry-head">';
-      html += '<span class="entry-date">' + escapeHtml(entry.date) + '</span>';
-      html += '<span class="badge' + (session ? '' : ' off') + '">' + escapeHtml(TYPE_LABELS[entry.sessionType]) + (session ? '・実施' : '') + '</span>';
-      html += '</div>';
-      html += '<div class="entry-meta">' + escapeHtml(meta.join(' / ')) + '</div>';
-      if (entry.memo) {
-        html += '<div class="entry-memo">' + escapeHtml(entry.memo) + '</div>';
-      }
-      html += '<div class="entry-actions">';
-      html += '<button type="button" class="secondary small" data-action="edit" data-id="' + escapeHtml(entry.id) + '">編集</button>';
-      html += '<button type="button" class="danger" data-action="delete" data-id="' + escapeHtml(entry.id) + '">削除</button>';
-      html += '</div>';
-      html += '</div>';
-      htmlParts.push(html);
-    });
-    listEl.innerHTML = htmlParts.join('');
-    var buttons = listEl.querySelectorAll('button[data-action]');
-    buttons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        if (btn.getAttribute('data-action') === 'edit') startEdit(btn.getAttribute('data-id'));
-        if (btn.getAttribute('data-action') === 'delete') deleteEntry(btn.getAttribute('data-id'));
-      });
-    });
-  }
-
-  function renderStats() {
-    var totalEl = document.getElementById('statTotal');
-    var recentEl = document.getElementById('statRecent');
-    var changeEl = document.getElementById('statWeightChange');
-    var changeSubEl = document.getElementById('statWeightChangeSub');
-    var avgEl = document.getElementById('statAvgCompare');
-
-    var sessions = entries.filter(isSession);
-    totalEl.textContent = String(sessions.length) + ' 回';
-
-    var start = new Date();
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - 27);
-    var recentCount = sessions.filter(function (e) {
-      return parseDate(e.date) >= start;
-    }).length;
-    recentEl.textContent = String(recentCount) + ' 回';
-
-    var withWeight = sortedEntries(false).filter(function (e) { return e.weight !== null; });
-    if (withWeight.length < 2) {
-      changeEl.textContent = 'データが足りません';
-      changeSubEl.textContent = '体重の記録が2件以上あると変化を表示します';
-    } else {
-      var first = withWeight[0];
-      var last = withWeight[withWeight.length - 1];
-      var diff = last.weight - first.weight;
-      var sign = diff > 0 ? '+' : '';
-      changeEl.textContent = sign + diff.toFixed(2) + ' kg';
-      changeSubEl.textContent = first.date + ' の ' + first.weight + ' kg から ' + last.date + ' の ' + last.weight + ' kg';
-    }
-
-    var weekMap = {};
-    entries.forEach(function (e) {
-      var wk = weekStartString(e.date);
-      if (!weekMap[wk]) weekMap[wk] = { sessions: 0, weights: [] };
-      if (isSession(e)) weekMap[wk].sessions += 1;
-      if (e.weight !== null) weekMap[wk].weights.push(e.weight);
-    });
-    var highWeights = [];
-    var lowWeights = [];
-    Object.keys(weekMap).forEach(function (wk) {
-      var bucket = weekMap[wk];
-      var target = bucket.sessions >= 4 ? highWeights : lowWeights;
-      bucket.weights.forEach(function (w) { target.push(w); });
-    });
-    if (highWeights.length === 0 || lowWeights.length === 0) {
-      avgEl.textContent = 'データが足りません（両方の週の体重記録が必要です）';
-    } else {
-      var highAvg = average(highWeights);
-      var lowAvg = average(lowWeights);
-      avgEl.textContent = '週4回以上: 平均 ' + highAvg.toFixed(2) + ' kg / 週4回未満: 平均 ' + lowAvg.toFixed(2) + ' kg';
-    }
-  }
-
-  function average(nums) {
-    var sum = 0;
-    nums.forEach(function (n) { sum += n; });
-    return nums.length ? sum / nums.length : 0;
-  }
-
-  function renderCharts() {
-    if (typeof Chart === 'undefined') {
-      document.getElementById('chartNote').style.display = '';
-      return;
-    }
-    var withWeight = sortedEntries(false).filter(function (e) { return e.weight !== null; });
-    var labels = withWeight.map(function (e) { return e.date; });
-    var values = withWeight.map(function (e) { return e.weight; });
-    var pointColors = withWeight.map(function (e) { return isSession(e) ? '#ce0000' : '#0017c1'; });
-    var pointSizes = withWeight.map(function (e) { return isSession(e) ? 7 : 4; });
-
-    var wCtx = document.getElementById('weightChart').getContext('2d');
-    if (weightChart) weightChart.destroy();
-    weightChart = new Chart(wCtx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: '体重 (kg)',
-          data: values,
-          borderColor: '#0017c1',
-          backgroundColor: pointColors,
-          pointBackgroundColor: pointColors,
-          pointBorderColor: pointColors,
-          pointRadius: pointSizes,
-          pointHoverRadius: 8,
-          tension: 0.15,
-          spanGaps: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { title: { display: true, text: 'kg' } },
-          x: { ticks: { maxTicksLimit: 8 } }
-        }
-      }
-    });
-
-    var weekMap = {};
-    entries.forEach(function (e) {
-      if (!isSession(e)) return;
-      var wk = weekStartString(e.date);
-      weekMap[wk] = (weekMap[wk] || 0) + 1;
-    });
-    var weekKeys = Object.keys(weekMap).sort();
-    var weekCounts = weekKeys.map(function (k) { return weekMap[k]; });
-
-    var sCtx = document.getElementById('weeklyChart').getContext('2d');
-    if (weeklyChart) weeklyChart.destroy();
-    weeklyChart = new Chart(sCtx, {
-      type: 'bar',
-      data: {
-        labels: weekKeys,
-        datasets: [{
-          label: 'セッション数',
-          data: weekCounts,
-          backgroundColor: '#0017c1'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: '回' } },
-          x: { ticks: { maxTicksLimit: 8 } }
-        }
-      }
-    });
-  }
-
-  function exportJson() {
-    var payload = JSON.stringify(sortedEntries(false), null, 2);
-    var blob = new Blob([payload], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'abs-training-log.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
-  }
-
-  function importJson() {
-    var file = importFile.files && importFile.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function () {
-      try {
-        var parsed = JSON.parse(String(reader.result || ''));
-        if (!Array.isArray(parsed)) throw new Error('not an array');
-        var cleaned = parsed.map(normalizeEntry).filter(function (e) { return e !== null; });
-        if (cleaned.length === 0) {
-          alert('読み込める記録がありませんでした。');
-          return;
-        }
-        if (!window.confirm(cleaned.length + ' 件の記録を読み込み、現在のデータを置き換えますか？')) return;
-        entries = cleaned;
-        saveEntries();
-        resetForm();
-        renderAll();
-        trySyncPush();
-        alert('読み込みが完了しました。');
-      } catch (err) {
-        alert('JSONの読み込みに失敗しました。ファイルの形式をご確認ください。');
-      } finally {
-        importFile.value = '';
-      }
-    };
-    reader.readAsText(file);
-  }
-})();
-</script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>
