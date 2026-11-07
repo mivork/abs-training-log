@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>腹筋トレーニング記録</title>
 <meta name="theme-color" content="#0017c1">
-<meta name="description" content="5本の腹筋動画から選んで行うトレーニングの記録ツール。体重や睡眠も記録して変化の要因を切り分けます。">
+<meta name="description" content="7本の腹筋動画をローテーションして行うトレーニングの記録ツール。体重や睡眠も記録して変化の要因を切り分けます。">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -174,7 +174,7 @@
 <div class="wrap">
   <header>
     <h1>腹筋トレーニング記録</h1>
-    <p>5本の腹筋動画（動画A〜E）から選んで行うトレーニングの記録ツールです。体重・睡眠も記録して、変化の要因を切り分けます。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
+    <p>7本の腹筋動画（動画A〜G）を毎回変えながらローテーションして行うトレーニングの記録ツールです。体重・睡眠も記録して、変化の要因を切り分けます。データはこのブラウザの中（localStorage）にだけ保存されます。</p>
   </header>
 
   <section class="card area-form">
@@ -215,8 +215,22 @@
         </a>
         <button type="button" class="secondary watch" data-embed="BK1ZcLH0X4U" data-title="動画E：鬼の腹筋 1セットで効くトレーニング">ここで再生</button>
       </div>
+      <div class="video-item">
+        <a class="video-main" href="https://www.youtube.com/watch?v=RXlnM5K6vMc" target="_blank" rel="noopener">
+          <span class="video-tag">動画F</span>
+          <span class="video-title">最速でバキバキの腹筋を作る鬼の腹筋トレーニング<span class="video-sub">（まめたま・8分・強度高）</span></span>
+        </a>
+        <button type="button" class="secondary watch" data-embed="RXlnM5K6vMc" data-title="動画F：最速でバキバキの腹筋を作る鬼の腹筋トレーニング（8分）">ここで再生</button>
+      </div>
+      <div class="video-item">
+        <a class="video-main" href="https://www.youtube.com/watch?v=lGZiUnmbeZc" target="_blank" rel="noopener">
+          <span class="video-tag">動画G</span>
+          <span class="video-title">4分で限界突破する鬼の腹筋トレーニング（悟り）<span class="video-sub">（まめたま・4分・最強レベル）</span></span>
+        </a>
+        <button type="button" class="secondary watch" data-embed="lGZiUnmbeZc" data-title="動画G：4分で限界突破する鬼の腹筋トレーニング（悟り）">ここで再生</button>
+      </div>
     </div>
-    <p class="note">ローテーションの目安: 基本はA・Bを軸に、週の中でC（下腹）とD（脇腹）を挟むと部位が偏りません。Eは調子のいい日用です。腰に違和感が出る種目は無理せず止めてください。</p>
+    <p class="note">ローテーションの目安（毎回違う動画で、刺激を変える）: 週4回なら、1週目は「A → G → B → F（週末・8分）」、2週目は「C（下腹） → E → D（脇腹） → A」のように、同じ動画が続かない順番がおすすめです。強度の高いF・Gは週1〜2回までにして、間には回復日を挟んでください。腰に違和感が出る種目は無理せず止めてください。</p>
     <form id="logForm">
       <div class="grid">
         <div>
@@ -231,6 +245,8 @@
             <option value="videoC">動画C（下腹集中4分）</option>
             <option value="videoD">動画D（脇腹3分）</option>
             <option value="videoE">動画E（鬼の腹筋・強度高め）</option>
+            <option value="videoF">動画F（鬼の腹筋・8分）</option>
+            <option value="videoG">動画G（限界突破・悟り4分）</option>
             <option value="light">軽い体幹</option>
             <option value="none">なし</option>
           </select>
@@ -382,6 +398,8 @@
     videoC: '動画C（下腹集中4分）',
     videoD: '動画D（脇腹3分）',
     videoE: '動画E（鬼の腹筋・強度高め）',
+    videoF: '動画F（鬼の腹筋・8分）',
+    videoG: '動画G（限界突破・悟り4分）',
     light: '軽い体幹',
     none: 'なし'
   };
