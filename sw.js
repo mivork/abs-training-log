@@ -2,7 +2,7 @@
 
 // ページ本体はネットワーク優先（更新がすぐ反映されるように）し、
 // 取得できないときだけキャッシュを使ってオフラインでも開けるようにする。
-var CACHE_NAME = 'abs-training-log-v1';
+var CACHE_NAME = 'abs-training-log-v2';
 var APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', function (event) {
